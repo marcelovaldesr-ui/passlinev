@@ -1,9 +1,9 @@
 // api/chat.js — Función serverless de Vercel.
 // Único lugar donde se usa GEMINI_API_KEY: nunca llega al navegador.
-// Recibe el mensaje + historial corto, arma el prompt NÚCLEO (mismo patrón
-// que el motor real de Respondo/Tino) con la información pública de Passline
-// como única fuente de verdad, y devuelve una decisión estructurada que el
-// frontend puede ejecutar (responder / iniciar un flujo / escalar a humano).
+// Recibe el mensaje + historial corto, arma el prompt NÚCLEO con la
+// información pública de Passline como única fuente de verdad, y devuelve
+// una decisión estructurada que el frontend puede ejecutar (responder /
+// iniciar un flujo / escalar a humano).
 
 const MODEL = "gemini-2.5-flash";
 
@@ -11,7 +11,7 @@ const MODEL = "gemini-2.5-flash";
 // INFORMACIÓN DEL NEGOCIO — compilada de la investigación pública de
 // Passline (home.passline.com, producers.passline.com, blog, T&C, FAQ,
 // políticas). Es la ÚNICA fuente que el modelo puede usar para afirmar
-// hechos. Mismo patrón que ed_conocimiento en el motor real de Respondo.
+// hechos.
 // ----------------------------------------------------------------------
 const KB_TEXTO = `
 ### [faq] Cómo comprar

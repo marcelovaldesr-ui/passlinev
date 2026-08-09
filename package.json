@@ -2,7 +2,7 @@
   "name": "passline-bot-demo",
   "version": "1.0.0",
   "private": true,
-  "description": "Demo de asistente embebido para Passline (Respondo) — motor híbrido: IA (Gemini) con respaldo automático de reglas locales.",
+  "description": "Demo de asistente embebido para Passline — motor híbrido: IA (Gemini) con respaldo automático de reglas locales.",
   "engines": {
     "node": ">=18"
   }

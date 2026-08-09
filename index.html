@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Passline · Asistente inteligente — Demo Respondo</title>
+<title>Passline · Asistente inteligente — Demo</title>
 <style>
   :root{
     --navy:#14161f;
@@ -273,11 +273,6 @@
   .send-btn:hover{ background:#ffb63d; }
   .send-btn:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
   .send-btn svg{ width:17px; height:17px; }
-  .powered{
-    text-align:center; font-size:10.5px; color:var(--muted); padding:3px 0 8px; background:#fff; flex:0 0 auto;
-  }
-  .powered b{ color:#5b3fa8; }
-
   @media (max-width:520px){
     /* El badge de "prototipo" es más corto en celular (se recorta el texto secundario)
        para que quepa en 1-2 líneas y no tape el logo del header de abajo. */
@@ -316,7 +311,7 @@
 </head>
 <body>
 
-  <div class="demo-badge">🧪 PROTOTIPO — demo de Respondo para Passline <span>· asistente embebido con respuestas basadas en información pública · sin conexión a sistemas reales</span></div>
+  <div class="demo-badge">🧪 PROTOTIPO — demo de asistente para Passline <span>· asistente embebido con respuestas basadas en información pública · sin conexión a sistemas reales</span></div>
 
   <!-- ============ MOCK PASSLINE SITE ============ -->
   <div class="site">
@@ -377,15 +372,13 @@
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20L21 12L4 4L6.5 12L4 20Z" fill="#241800"/></svg>
       </button>
     </div>
-    <div class="powered">⚡ Con tecnología <b>Respondo</b> · demo</div>
   </div>
 
 <script>
 "use strict";
 /* =====================================================================
-   ASISTENTE PASSLINE — DEMO RESPONDO
-   Motor conversacional inspirado en la arquitectura real de los
-   empleados digitales de Respondo (Tino):
+   ASISTENTE PASSLINE — DEMO
+   Motor conversacional con arquitectura híbrida (IA + reglas):
    - Base de conocimiento como única fuente de verdad (+ fuente citada)
    - Intención + contexto + estado de conversación (flujos con slots)
    - Regla: nunca inventar; ante incertidumbre → decirlo y derivar
