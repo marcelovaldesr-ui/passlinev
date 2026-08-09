@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passline · Asistente inteligente — Demo Respondo</title>
+<style>
+  :root{
+    --navy:#14161f;
+    --navy-2:#1c1f2c;
+    --navy-3:#232738;
+    --orange:#f5a623;
+    --orange-dark:#c77f10;
+    --orange-ink:#241800;
+    --ink:#1b1d27;
+    --muted:#6b7280;
+    --line:#e8e9ee;
+    --bg:#f4f5f7;
+    --ok:#1f9d55;
+    --ok-bg:#e6f6ec;
+    --warn-bg:#fff6e6;
+    --warn-ink:#8a5a00;
+    --danger:#d64545;
+    --card-shadow:0 1px 2px rgba(20,22,31,.05), 0 4px 16px rgba(20,22,31,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;}
+
+  /* ---------- Demo banner ---------- */
+  .demo-badge{
+    position:fixed; top:0; left:0; right:0; z-index:60;
+    background:var(--orange); color:var(--orange-ink);
+    font-size:12.5px; font-weight:700; text-align:center;
+    padding:6px 12px; letter-spacing:.2px;
+  }
+  .demo-badge span{font-weight:400; opacity:.85; margin-left:6px;}
+
+  /* ---------- Mock Passline site ---------- */
+  .site{ padding-top:31px; }
+  header.site-header{
+    background:var(--navy); padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{ display:flex; align-items:center; gap:8px; }
+  .logo svg{ width:22px; height:22px; }
+  .logo-text{ font-size:20px; font-weight:800; color:#fff; letter-spacing:.2px; }
+  .logo-text b{ color:var(--orange); font-weight:800; }
+  .acct{
+    width:34px; height:34px; border-radius:50%;
+    border:1.5px solid #8a8fa3; display:flex; align-items:center; justify-content:center;
+  }
+  .hero{
+    background:linear-gradient(120deg,#1a1d2b 0%, #23283d 55%, #2c1f18 100%);
+    padding:44px 28px; color:#fff; display:flex; flex-direction:column; gap:10px;
+  }
+  .hero-eyebrow{ color:var(--orange); font-weight:700; font-size:13px; letter-spacing:.4px; text-transform:uppercase; }
+  .hero h1{ margin:0; font-size:30px; line-height:1.25; max-width:560px; }
+  .hero p{ margin:0; color:#c7cad6; max-width:480px; font-size:14px; }
+  .cats{ display:flex; gap:10px; overflow-x:auto; padding:16px 28px; background:#fff; border-bottom:1px solid var(--line); }
+  .cats::-webkit-scrollbar{ display:none; }
+  .cat-chip{
+    flex:0 0 auto; padding:8px 16px; border-radius:999px; background:var(--bg);
+    font-size:13px; font-weight:600; white-space:nowrap; border:1px solid var(--line);
+  }
+  .section-label{ padding:20px 28px 6px; font-size:12.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:18px; padding:8px 28px 80px; }
+  .card{
+    background:#fff; border-radius:12px; overflow:hidden; border:1px solid var(--line);
+    box-shadow:0 1px 2px rgba(20,22,31,.04); position:relative;
+  }
+  .card .art{ height:130px; position:relative; }
+  .card .ribbon{
+    position:absolute; top:14px; left:-34px; width:150px; text-align:center;
+    background:#e5484d; color:#fff; font-size:11px; font-weight:800; letter-spacing:.5px;
+    transform:rotate(-45deg); padding:4px 0;
+  }
+  .card .body{ padding:12px 14px 16px; }
+  .card .loc{ font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .card .title{ font-size:14.5px; font-weight:700; line-height:1.3; margin-bottom:12px; min-height:38px;}
+  .card .date{ display:flex; align-items:baseline; gap:5px; font-weight:800; font-size:20px;}
+  .card .date small{ font-size:11px; font-weight:600; color:var(--muted); line-height:1.1;}
+  .card .date .sep{ width:1px; height:26px; background:var(--line); margin:0 6px;}
+
+  /* ---------- Launcher ---------- */
+  .launcher{
+    position:fixed; right:24px; bottom:24px; z-index:70;
+    width:60px; height:60px; border-radius:50%;
+    background:var(--orange); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(245,166,35,.45);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .launcher:hover{ transform:scale(1.06); }
+  .launcher:focus-visible{ outline:3px solid var(--navy); outline-offset:3px; }
+  .launcher svg{ width:27px; height:27px; }
+  .launcher .dot{
+    position:absolute; top:-2px; right:-2px; min-width:16px; height:16px; border-radius:8px;
+    background:#e5484d; border:2px solid #fff; color:#fff; font-size:10px; font-weight:800;
+    display:none; align-items:center; justify-content:center; padding:0 3px;
+  }
+  .launcher .dot.on{ display:flex; }
+  .teaser{
+    position:fixed; right:96px; bottom:34px; z-index:69;
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:10px 14px; font-size:13.5px; box-shadow:var(--card-shadow);
+    opacity:0; transform:translateY(6px); transition:opacity .3s ease, transform .3s ease;
+    pointer-events:none;
+  }
+  .teaser.on{ opacity:1; transform:translateY(0); }
+
+  /* ---------- Chat panel ---------- */
+  .chat{
+    position:fixed; right:24px; bottom:96px; z-index:70;
+    width:400px; max-width:calc(100vw - 32px);
+    height:640px; max-height:calc(100vh - 130px);
+    background:#fff; border-radius:18px;
+    box-shadow:0 24px 70px rgba(20,22,31,.30);
+    display:flex; flex-direction:column; overflow:hidden;
+    opacity:0; transform:translateY(14px) scale(.985); pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .chat.open{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+
+  .chat-head{
+    background:var(--navy); color:#fff; padding:12px 14px;
+    display:flex; align-items:center; gap:10px; flex:0 0 auto;
+  }
+  .chat-head .avatar{
+    width:36px; height:36px; border-radius:50%; background:var(--orange);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .chat-head .who{ flex:1; min-width:0; }
+  .chat-head .who .name{ font-weight:700; font-size:14.5px; }
+  .chat-head .who .status{ font-size:11px; color:#aab0c0; display:flex; align-items:center; gap:5px; margin-top:1px;}
+  .chat-head .who .status i{ width:6px; height:6px; border-radius:50%; background:#2ecc71; }
+  .hbtn{
+    background:none; border:none; color:#c7cad6; cursor:pointer; padding:6px; font-size:15px; line-height:1;
+    border-radius:8px;
+  }
+  .hbtn:hover{ background:rgba(255,255,255,.1); color:#fff;}
+  .hbtn:focus-visible{ outline:2px solid var(--orange); }
+  .hbtn.on{ color:var(--orange); }
+  .chat-subnote{
+    background:var(--warn-bg); color:var(--warn-ink); font-size:11px; padding:6px 14px;
+    border-bottom:1px solid #f3e2b8; flex:0 0 auto;
+  }
+
+  .chat-body{
+    flex:1 1 auto; overflow-y:auto; padding:16px 14px 10px; display:flex; flex-direction:column; gap:8px;
+    background:#fafafc; scroll-behavior:smooth;
+  }
+  .msg{ display:flex; flex-direction:column; max-width:100%; }
+  .msg .row{ display:flex; }
+  .msg.bot .row{ justify-content:flex-start; }
+  .msg.user .row{ justify-content:flex-end; }
+  .bubble{
+    max-width:84%; padding:9px 13px; border-radius:15px; font-size:13.6px; line-height:1.45;
+    white-space:pre-wrap; word-wrap:break-word; overflow-wrap:break-word;
+  }
+  .msg.bot .bubble{ background:#fff; border:1px solid var(--line); border-bottom-left-radius:5px; }
+  .msg.user .bubble{ background:var(--navy); color:#fff; border-bottom-right-radius:5px; }
+  .bubble b{ font-weight:700; }
+  .fuente{
+    font-size:10.5px; color:var(--muted); margin:3px 0 0 6px; display:flex; align-items:center; gap:4px;
+  }
+  .fuente::before{ content:"📄"; font-size:10px; }
+  .meta-tec{
+    font-size:10.5px; color:#7c5cbf; background:#f4f0fb; border:1px dashed #d9ccf2;
+    border-radius:8px; padding:4px 8px; margin:4px 0 0 6px; align-self:flex-start;
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+  }
+
+  .typing{ display:flex; gap:4px; align-items:center; padding:4px 2px; }
+  .typing span{ width:6px; height:6px; border-radius:50%; background:#b7bac4; animation:blink 1.2s infinite ease-in-out; }
+  .typing span:nth-child(2){ animation-delay:.15s; }
+  .typing span:nth-child(3){ animation-delay:.3s; }
+  .typing .lbl{ font-size:11.5px; color:var(--muted); margin-left:6px; }
+  @keyframes blink{ 0%,80%,100%{opacity:.25;} 40%{opacity:1;} }
+
+  /* ---------- Chips ---------- */
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; padding:4px 14px 10px; flex:0 0 auto; }
+  .chip-btn{
+    border:1.5px solid var(--orange); color:var(--orange-dark); background:#fff;
+    font-size:12.5px; font-weight:700; padding:7px 12px; border-radius:999px; cursor:pointer;
+    transition:background .12s ease, color .12s ease; min-height:32px;
+  }
+  .chip-btn:hover{ background:var(--orange); color:var(--orange-ink); }
+  .chip-btn:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
+  .chip-btn.secondary{ border-color:var(--line); color:var(--muted); }
+  .chip-btn.secondary:hover{ background:var(--bg); color:var(--ink); }
+
+  /* ---------- In-chat components ---------- */
+  .c-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    max-width:92%; box-shadow:var(--card-shadow); margin-top:2px;
+  }
+  .c-card .tag{
+    font-size:9.5px; font-weight:800; letter-spacing:.6px; text-transform:uppercase;
+    padding:4px 10px; display:inline-block; border-bottom-right-radius:8px;
+  }
+  .tag.sim{ background:#f4f0fb; color:#7c5cbf; }
+  .tag.ok{ background:var(--ok-bg); color:var(--ok); }
+  .c-card .cc-head{ height:64px; display:flex; align-items:flex-end; padding:8px 12px; }
+  .c-card .cc-head .t{ color:#fff; font-weight:800; font-size:14px; text-shadow:0 1px 4px rgba(0,0,0,.3); }
+  .c-card .cc-body{ padding:10px 12px 12px; }
+  .kv{ display:flex; gap:8px; font-size:12.5px; margin:3px 0; }
+  .kv .k{ color:var(--muted); flex:0 0 auto; min-width:86px; }
+  .kv .v{ font-weight:600; }
+  .badge{ display:inline-block; font-size:11px; font-weight:800; border-radius:999px; padding:3px 10px; }
+  .badge.hot{ background:#ffe8e0; color:#c2410c; }
+  .badge.ok{ background:var(--ok-bg); color:var(--ok); }
+  .c-actions{ display:flex; gap:8px; padding:0 12px 12px; flex-wrap:wrap; }
+  .c-btn{
+    background:var(--orange); color:var(--orange-ink); border:none; border-radius:9px;
+    font-size:12.5px; font-weight:700; padding:8px 12px; cursor:pointer; min-height:32px;
+  }
+  .c-btn:hover{ background:#ffb63d; }
+  .c-btn:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
+  .c-btn.ghost{ background:#fff; border:1.5px solid var(--line); color:var(--ink); }
+  .c-btn.ghost:hover{ background:var(--bg); }
+  .c-btn:disabled{ opacity:.45; cursor:default; }
+
+  .ev-mini{ display:flex; gap:10px; padding:10px 12px; align-items:center; border-top:1px solid var(--line); }
+  .ev-mini:first-of-type{ border-top:none; }
+  .ev-mini .thumb{ width:52px; height:52px; border-radius:9px; flex:0 0 auto; }
+  .ev-mini .inf{ flex:1; min-width:0; }
+  .ev-mini .inf .n{ font-weight:700; font-size:13px; line-height:1.25; }
+  .ev-mini .inf .d{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .ev-mini .go{ flex:0 0 auto; }
+
+  .timeline{ padding:2px 12px 10px; }
+  .tl-step{ display:flex; gap:10px; align-items:flex-start; padding:5px 0; }
+  .tl-step .ic{
+    width:18px; height:18px; border-radius:50%; flex:0 0 auto; margin-top:1px;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800;
+    background:var(--line); color:var(--muted);
+  }
+  .tl-step.done .ic{ background:var(--ok-bg); color:var(--ok); }
+  .tl-step .tx{ font-size:12.5px; line-height:1.35; }
+  .tl-step .tx small{ color:var(--muted); display:block; }
+
+  .accion-burbuja{
+    display:flex; align-items:center; gap:9px;
+    background:#f4f0fb; border:1px dashed #d9ccf2; color:#5b3fa8;
+    border-radius:13px; padding:9px 13px; font-size:12.8px; max-width:84%;
+  }
+  .accion-burbuja .spin{
+    width:14px; height:14px; border-radius:50%; flex:0 0 auto;
+    border:2px solid #d9ccf2; border-top-color:#7c5cbf; animation:girar .8s linear infinite;
+  }
+  @keyframes girar{ to{ transform:rotate(360deg);} }
+
+  /* ---------- Input ---------- */
+  .chat-input{
+    display:flex; align-items:center; gap:8px; padding:10px 12px 6px; border-top:1px solid var(--line);
+    background:#fff; flex:0 0 auto;
+  }
+  .chat-input input{
+    flex:1; border:1.5px solid var(--line); border-radius:999px; padding:10px 14px; font-size:13.5px;
+    outline:none; font-family:inherit; min-height:40px;
+  }
+  .chat-input input:focus{ border-color:var(--orange); }
+  .send-btn{
+    width:40px; height:40px; border-radius:50%; background:var(--orange); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .send-btn:hover{ background:#ffb63d; }
+  .send-btn:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
+  .send-btn svg{ width:17px; height:17px; }
+  .powered{
+    text-align:center; font-size:10.5px; color:var(--muted); padding:3px 0 8px; background:#fff; flex:0 0 auto;
+  }
+  .powered b{ color:#5b3fa8; }
+
+  @media (max-width:520px){
+    .chat{ right:10px; left:10px; width:auto; bottom:84px; height:calc(100vh - 148px); border-radius:16px; }
+    .launcher{ right:14px; bottom:14px; }
+    .teaser{ display:none; }
+    .bubble{ max-width:88%; font-size:14px; }
+    .chip-btn{ min-height:40px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="demo-badge">🧪 PROTOTIPO — demo de Respondo para Passline <span>· asistente embebido con respuestas basadas en información pública · sin conexión a sistemas reales</span></div>
+
+  <!-- ============ MOCK PASSLINE SITE ============ -->
+  <div class="site">
+    <header class="site-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3 12L12 3H19C20.1 3 21 3.9 21 5V12L12 21L3 12Z" stroke="#f5a623" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="16" cy="8" r="1.6" fill="#f5a623"/>
+        </svg>
+        <div class="logo-text">pass<b>line</b></div>
+      </div>
+      <div class="acct" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#c7cad6" stroke-width="1.6"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" stroke="#c7cad6" stroke-width="1.6"/></svg>
+      </div>
+    </header>
+    <div class="hero">
+      <div class="hero-eyebrow">Chile</div>
+      <h1>Tu puerta de entrada a miles de eventos</h1>
+      <p>Compra entradas para conciertos, deporte, teatro y más — o crea tu propio evento gratis y empieza a vender hoy mismo.</p>
+    </div>
+    <div class="cats" aria-hidden="true">
+      <div class="cat-chip">Música</div><div class="cat-chip">Fútbol</div><div class="cat-chip">Festivales</div>
+      <div class="cat-chip">Deportes</div><div class="cat-chip">Fiestas</div><div class="cat-chip">Comedia</div>
+      <div class="cat-chip">Exposiciones y Conferencias</div><div class="cat-chip">Teatro y Musicales</div>
+      <div class="cat-chip">Familia</div><div class="cat-chip">Vacaciones de Invierno</div>
+    </div>
+    <div class="section-label">Eventos de ejemplo (datos ficticios, solo para esta demo)</div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- ============ LAUNCHER ============ -->
+  <div class="teaser" id="teaser">👋 ¿Te ayudo con tus entradas o tu evento?</div>
+  <button class="launcher" id="launcher" aria-label="Abrir asistente de Passline" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 1 1 3.2 6.4L4 20l1.2-3.6A7.96 7.96 0 0 1 4 12Z" stroke="#241800" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span class="dot" id="unread" aria-hidden="true"></span>
+  </button>
+
+  <!-- ============ CHAT ============ -->
+  <div class="chat" id="chat" role="dialog" aria-label="Asistente de Passline" aria-modal="false">
+    <div class="chat-head">
+      <div class="avatar" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3H19C20.1 3 21 3.9 21 5V12L12 21L3 12Z" stroke="#14161f" stroke-width="2" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="who">
+        <div class="name">Asistente Passline</div>
+        <div class="status"><i></i> En línea · responde al instante</div>
+      </div>
+      <button class="hbtn" id="btnTec" aria-label="Modo técnico: ver intención y fuente de cada respuesta" title="Modo técnico">&lt;/&gt;</button>
+      <button class="hbtn" id="btnReset" aria-label="Empezar conversación nueva" title="Nueva conversación">↺</button>
+      <button class="hbtn" id="btnClose" aria-label="Cerrar asistente" title="Cerrar">✕</button>
+    </div>
+    <div class="chat-subnote">Demo — respuestas basadas en la información pública de Passline. Las acciones se simulan.</div>
+    <div class="chat-body" id="chatBody" role="log" aria-live="polite" aria-label="Mensajes de la conversación"></div>
+    <div class="chips" id="chips"></div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Escribe tu mensaje…" autocomplete="off" aria-label="Escribe tu mensaje">
+      <button class="send-btn" id="sendBtn" aria-label="Enviar mensaje">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20L21 12L4 4L6.5 12L4 20Z" fill="#241800"/></svg>
+      </button>
+    </div>
+    <div class="powered">⚡ Con tecnología <b>Respondo</b> · demo</div>
+  </div>
+
+<script>
+"use strict";
+/* =====================================================================
+   ASISTENTE PASSLINE — DEMO RESPONDO
+   Motor conversacional inspirado en la arquitectura real de los
+   empleados digitales de Respondo (Tino):
+   - Base de conocimiento como única fuente de verdad (+ fuente citada)
+   - Intención + contexto + estado de conversación (flujos con slots)
+   - Regla: nunca inventar; ante incertidumbre → decirlo y derivar
+   - Escalación por triggers (pedido_explicito, sentimiento_negativo,
+     sin_resolver, incertidumbre) con resumen_para_humano visible
+   - Captura de lead con clasificación caliente/tibio/frio
+   ===================================================================== */
+
+/* ============================= DATOS DEMO ============================= */
+const EVENTOS = [
+  { id:"verano",  title:"Festival Verano Central", loc:"Parque O'Higgins, Santiago", d:"14", m:"Ene", precio:25000, cat:"musica", grad:"linear-gradient(135deg,#ff9a3c,#ff6b6b)" },
+  { id:"aurora",  title:"Noche Electrónica: Aurora", loc:"Club Verde, Santiago", d:"15", m:"Ene", precio:18000, cat:"musica", grad:"linear-gradient(135deg,#6a4bd6,#2f7dd1)" },
+  { id:"indie",   title:"Indie en el Parque", loc:"Parque Bicentenario, Vitacura", d:"16", m:"Ene", precio:12000, cat:"musica", grad:"linear-gradient(135deg,#2ecc71,#1c8f57)" },
+  { id:"copa",    title:"Copa Amistad — Fecha 12", loc:"Estadio Municipal, Rancagua", d:"22", m:"Ene", precio:8000,  cat:"deporte", grad:"linear-gradient(135deg,#2f7dd1,#1c1f2c)" },
+  { id:"comedia", title:"Noche de Comedia Stand Up", loc:"Teatro Caupolicán, Santiago", d:"05", m:"Feb", precio:15000, cat:"comedia", soldOut:true, grad:"linear-gradient(135deg,#6a4bd6,#e5484d)" },
+  { id:"gastro",  title:"Expo Gastronómica Sur", loc:"Centro de Eventos, Concepción", d:"18", m:"Feb", precio:6000, cat:"gastro", grad:"linear-gradient(135deg,#f5a623,#d94f04)" },
+];
+const CIUDADES = ["santiago","valparaiso","vina del mar","concepcion","la serena","temuco","antofagasta","rancagua","puerto montt","iquique","talca","osorno","calama","arica","chillan","valdivia"];
+
+const FUENTES = {
+  tyc:"Términos y Condiciones de Passline",
+  tycProd:"T&C para Productoras",
+  faq:"Preguntas Frecuentes de Passline",
+  pol:"Políticas de Passline",
+  prod:"producers.passline.com",
+  blog:"Blog oficial de Passline",
+  web:"passline.com",
+};
+const CATS = "Música, Fútbol, Festivales, Deportes, Fiestas, Comedia, Exposiciones, Gastronómicos, Teatro y Musicales, Familia, Cine y más";
+
+/* =========================== ESTADO GLOBAL =========================== */
+const S = {
+  abierto:false, iniciado:false,
+  persona:null,            // 'comprador' | 'productora' | null (se infiere, nunca se exige)
+  flujo:null,              // { id, paso, datos:{} }
+  historial:[],            // {rol:'cliente'|'bot', texto}
+  acciones:[],             // registro de lo que el bot ya hizo (para el resumen de handoff)
+  temaActual:null,
+  fallos:0,                // fallos seguidos de comprensión → 2 = sin_resolver
+  escalado:false,
+  correo:null, nombre:null,
+  tecnico:false,
+  botOcupado:false, cola:[],
+  noLeidos:0,
+};
+
+/* ======================= UTILIDADES DE TEXTO ======================== */
+function norm(s){
+  return (s||"").toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[^a-z0-9ñ$#@. ]/g," ")
+    .replace(/\s+/g," ").trim();
+}
+function tokens(s){ return norm(s).split(" ").filter(Boolean); }
+function lev1(a,b){ // ¿distancia de edición <= 1?
+  if (a===b) return true;
+  const la=a.length, lb=b.length;
+  if (Math.abs(la-lb)>1) return false;
+  let i=0,j=0,dif=0;
+  while(i<la && j<lb){
+    if(a[i]===b[j]){i++;j++;continue;}
+    if(++dif>1) return false;
+    if(la>lb) i++; else if(lb>la) j++; else {i++;j++;}
+  }
+  return dif + (la-i) + (lb-j) <= 1;
+}
+function fmtCLP(n){ return "$" + Math.round(n).toLocaleString("es-CL"); }
+// Escapa cualquier texto capturado del usuario (o de la IA) antes de insertarlo como HTML en las tarjetas
+// (cardTicket/cardLead/cardHandoff usan innerHTML por comodidad de layout — esto evita que un valor
+// como una "ciudad" o un "correo" con < > " ' se interprete como markup).
+function esc(s){
+  return String(s==null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function parseNumero(texto){
+  const t = norm(texto).replace(/\./g,"");
+  let m = t.match(/(\d+)\s*mil/); if (m) return parseInt(m[1],10)*1000;
+  m = t.match(/\d+/g); if (!m) return null;
+  return parseInt(m.sort((a,b)=>b.length-a.length)[0],10);
+}
+function esCorreo(t){ return /\S+@\S+\.\S+/.test(t); }
+function esOrden(t){ return /#?\d{5,}/.test(t.replace(/\./g,"")); }
+
+/* ==================== BASE DE CONOCIMIENTO (KB) =====================
+   Cada entrada: kw (frases pesan más que palabras sueltas), resp
+   (burbujas), fuente, chips, aud (audiencia), run (para flujos/cards).
+   REGLA NÚCLEO: solo se afirma lo que está aquí. Lo demás → honestidad
+   + derivación. ==================================================== */
+const KB = {};
+function K(id, def){ KB[id] = Object.assign({id}, def); }
+
+/* ---------- COMPRADOR ---------- */
+K("comprar", { aud:"comprador", fuente:"faq",
+  kw:["como compro","comprar entradas","como saco entradas","quiero entradas","como se compra","adquirir entradas","comprar un ticket","como comprar"],
+  resp:["Es rápido: buscas el evento, eliges tipo y cantidad de entrada, y pagas en línea.","Tu entrada digital (eTicket) llega en segundos a tu correo y queda en tu cuenta de Passline. En el evento la muestras desde el celular y listo 🎟️"],
+  chips:["pago","buscarEventos","reembolso"] });
+
+K("pago", { aud:"comprador", fuente:"faq",
+  kw:["medios de pago","como pago","formas de pago","metodos de pago","tarjeta","mercado pago","paypal","cripto","con que pago","puedo pagar"],
+  resp:["Passline trabaja con Mercado Pago, Decidir, Pago Fácil y PayPal, y también procesa cripto. Las opciones exactas dependen del país donde compres.","Tus datos de tarjeta no se guardan en Passline: cada pago lo autoriza directamente tu banco. Apenas se aprueba, la entrada se genera sola."],
+  chips:["comprar","flujoEntrada"] });
+
+K("wallet", { aud:"comprador", fuente:"faq",
+  kw:["donde queda mi entrada","donde llega mi entrada","como presento mi entrada","codigo qr","wallet","eticket","como entro al evento","donde veo mis entradas","mis entradas"],
+  resp:["Tu entrada queda en tu cuenta de Passline y también llega a tu correo como eTicket. Se puede reenviar por SMS o WhatsApp.","En el acceso la muestras desde tu celular y el personal escanea el QR. Ojo: son \"al portador\" y no se reimprimen si se pierden — guárdala también en tu wallet (Apple/Google) como respaldo 👌"],
+  chips:["flujoEntrada","appMovil"] });
+
+K("reembolso", { aud:"comprador", fuente:"tyc",
+  kw:["reembolso","devolucion","devolver","cambio de entrada","me arrepenti","anular mi compra","cancelar mi compra","retracto","plata de vuelta","devuelvan","tarifa premium","flex"],
+  resp:["Te cuento cómo funciona según los términos de Passline:\n\n• Compra normal: una vez finalizada, no hay cambios ni devoluciones (el derecho a retracto está excluido por la Ley 19.496).\n• Excepciones: evento cancelado o con cambios sustanciales (fecha, hora, lugar) → reembolso por transferencia en hasta 20 días hábiles.\n• Passline Flex+ / Tarifa Premium: si la contrataste al comprar, puedes arrepentirte pidiéndolo hasta 24 h antes del evento."],
+  chips:["flujoCancelado","responsabilidad","asesor"] });
+
+K("agotado", { aud:"comprador", fuente:"web",
+  kw:["agotado","sold out","no quedan entradas","se acabaron las entradas"],
+  resp:["\"SOLD OUT\" significa que la productora vendió todas las entradas de esa función. Passline no gestiona reventa, así que lo mejor es estar atento a si abren una nueva fecha."],
+  chips:["buscarEventos"] });
+
+K("appMovil", { aud:"comprador", fuente:"web",
+  kw:["tienen app","aplicacion movil","descargar la app","google play","app store","en que idiomas"],
+  resp:["Sí — Passline tiene app en Google Play y App Store, con tu wallet de entradas integrada. Funciona en español, inglés, portugués, italiano y catalán."],
+  chips:["wallet"] });
+
+K("cuenta", { aud:"comprador", fuente:"faq",
+  kw:["cambiar mi contrasena","olvide mi clave","olvide mi contrasena","editar mis datos","modificar mi perfil","cambiar clave","mi cuenta"],
+  resp:["Eso se maneja en la sección \"Tu Cuenta\" de tu perfil: ahí editas tus datos, cambias la contraseña (opción \"Cambiar Clave\") y ves tus tickets comprados."],
+  chips:["flujoEntrada"] });
+
+K("privacidad", { aud:"comprador", fuente:"pol",
+  kw:["mis datos personales","politica de privacidad","que hacen con mis datos","datos estan seguros","protegen mis datos"],
+  resp:["Passline usa tus datos (nombre, contacto, etc.) para procesar compras y mejorar el servicio. Según su política, no se traspasan a terceros salvo empresas relacionadas con Passline."],
+  chips:[] });
+
+K("responsabilidad", { aud:"comprador", fuente:"tyc",
+  kw:["passline se hace responsable","reclamo por el evento","el evento estuvo malo","me paso algo en el evento","accidente en el evento","quien responde"],
+  resp:["Importante saberlo: Passline actúa como intermediaria de la productora. La calidad del evento, los cambios de último minuto en el lugar y lo que pase durante la presentación son responsabilidad de la productora organizadora.","Si tuviste un problema con tu compra puntual, eso sí lo puede ver el equipo de Passline — ¿quieres que lo derive?"],
+  chips:["asesor","reembolso"] });
+
+K("contacto", { aud:"comprador", fuente:"tyc",
+  kw:["telefono de passline","numero de contacto","correo de soporte","email de contacto","como los llamo"],
+  resp:["Para Chile: +562 2234 1369 o contacto@passline.com. Y si quieres, yo mismo dejo tu caso derivado con el contexto de esta conversación 👍"],
+  chips:["asesor"] });
+
+K("confianza", { aud:null, fuente:"prod",
+  kw:["es confiable","es seguro comprar","cuanta gente usa passline","que tan grande es passline","estadisticas de passline"],
+  resp:["Passline reporta 8,3 millones de tickets vendidos, más de 117 mil eventos activos y 127 millones de visitas, operando en 19 países de América y Europa."],
+  chips:[] });
+
+/* ---------- PRODUCTORA ---------- */
+K("crearEvento", { aud:"productora", fuente:"prod",
+  kw:["crear un evento","publicar un evento","como creo mi evento","subir mi evento","vender entradas de mi evento","crear mi evento","publicar mi evento"],
+  resp:["Publicar tu evento en Passline es gratis y la carga toma unos 5 minutos.","Si quieres, lo armamos altiro: te hago 4 preguntas cortas y te dejo el resumen listo para el equipo de Passline. También puedo explicarte el paso a paso primero."],
+  chips:["wizardStart","cargaEvento","comisiones"] });
+
+K("cargaEvento", { aud:"productora", fuente:"blog",
+  kw:["pasos para cargar","paso a paso","proceso de creacion","como se carga un evento","como funciona crear"],
+  resp:["El flujo real en la plataforma:\n\n1. Eliges tipo de evento y país\n2. Creas tu cuenta gratis\n3. Completas nombre, categorías, descripción, venue y la imagen del evento (obligatoria)\n4. Defines entradas y precios (puede ser después)\n5. Publicas — y el equipo de Passline valida tu evento antes de habilitar la venta (te llega la confirmación por email)","Tip del blog de Passline: cuida la capitalización del nombre y evita caracteres raros — ayuda a que Google lo encuentre."],
+  chips:["wizardStart","aprobacion","entradasPrecio"] });
+
+K("categoriasEvento", { aud:"productora", fuente:"web",
+  kw:["que categorias hay","categoria de mi evento","categorias disponibles"],
+  resp:["Las categorías vigentes: " + CATS + ". Puedes asociar más de una para que tu evento sea más fácil de encontrar."],
+  chips:["wizardStart"] });
+
+K("publicoPrivado", { aud:"productora", fuente:"blog",
+  kw:["publico o privado","evento privado","evento solo por link","evento corporativo cerrado"],
+  resp:["Público: aparece en el home y las búsquedas de Passline.\nPrivado: solo lo ve quien tenga el link directo — ideal para eventos corporativos o cerrados."],
+  chips:["entradasPrecio","wizardStart"] });
+
+K("entradasPrecio", { aud:"productora", fuente:"blog",
+  kw:["tipos de entrada","configurar entradas","early bird","precios de mis entradas","limite de cupos","preventa"],
+  resp:["Defines los tipos que quieras (General, Early Bird, VIP…), cada uno con su precio y su tope de cupos — al llegar al tope se marca \"Agotado\" solo.","Este paso es opcional al crear el evento: puedes publicar primero y afinar entradas después."],
+  chips:["comisiones","aprobacion"] });
+
+K("aprobacion", { aud:"productora", fuente:"blog",
+  kw:["cuando se aprueba","validacion de mi evento","por que no esta activo","cuanto demora la aprobacion","mi evento no aparece"],
+  resp:["Todo evento pasa por una validación del equipo de Passline antes de habilitarse para la venta, y la confirmación llega por email.","Si ya pasó un tiempo razonable y nada, lo derivo al equipo para que revisen tu caso puntual — ¿te parece?"],
+  chips:["asesor"] });
+
+K("comisiones", { aud:"productora", fuente:"tycProd",
+  kw:["comision","comisiones","cuanto cobra passline","cuanto se queda passline","costo del servicio","porcentaje de venta","fee","cuanto me descuentan"],
+  resp:["Según los T&C para productoras: la comisión es 15% sobre el valor de venta, con un cargo mínimo de $500 por entrada (IVA incluido). Pagos en efectivo o internacionales suman $1.000 extra.","¿Quieres que te lo calcule con los números de tu evento? 🧮"],
+  chips:["calcStart","liquidaciones"] });
+
+K("liquidaciones", { aud:"productora", fuente:"tycProd",
+  kw:["cuando me pagan","liquidacion","cuando recibo la plata","transferencia de lo recaudado","cuando llega el dinero","cuando cobro yo"],
+  resp:["Passline te transfiere lo recaudado dentro de 15 días hábiles después del evento, descontando la comisión.","El depósito va a la cuenta bancaria que registraste — y no se puede cambiar sin autorización de Passline, así que déjala bien configurada desde el inicio."],
+  chips:["comisiones","obligacionesProductor"] });
+
+K("cancelacionProductor", { aud:"productora", fuente:"tycProd",
+  kw:["cancelar mi evento","suspender mi evento","postergar mi evento","reprogramar mi evento","si cancelo que pasa"],
+  resp:["Si cancelas, suspendes o postergas: debes reembolsar a los compradores, avisar a Passline de inmediato y comunicarlo públicamente.","Passline puede retener los fondos hasta 6 meses mientras se procesan los reembolsos, y los costos de la cancelación corren por cuenta de la productora."],
+  chips:["asesor"] });
+
+K("obligacionesProductor", { aud:"productora", fuente:"tycProd",
+  kw:["mis obligaciones","que debo cumplir","boletas a los asistentes","impuestos de mi evento","emitir boleta"],
+  resp:["Lo esencial: información veraz y completa del evento, emitir tú los comprobantes fiscales a los asistentes, pagar los impuestos que correspondan y mantener tus datos bancarios al día."],
+  chips:["comisiones","liquidaciones"] });
+
+K("ventasTiempoReal", { aud:"productora", fuente:"prod",
+  kw:["seguimiento de ventas","cuanto he vendido","reporte de ventas","dashboard de ventas","ver mis ventas"],
+  resp:["Tienes seguimiento de ventas en tiempo real desde tu cuenta de organizador — sin pedir reportes ni esperar cierres."],
+  chips:["difusion"] });
+
+K("difusion", { aud:"productora", fuente:"prod",
+  kw:["como promociono","promocionar mi evento","difundir mi evento","vender mas entradas","marketing gratis"],
+  resp:["Gratis: comparte tu link de Passline, usa varias categorías y cuida nombre/descripción (SEO). En la sección de recursos hay una guía de difusión y un instructivo para tus RRPP.","Y si quieres invertir, Passline ofrece servicios de marketing pagados — ¿te cuento?"],
+  chips:["servicios","recursos"] });
+
+K("servicios", { aud:"productora", fuente:"prod",
+  kw:["servicios adicionales","servicios de marketing","publicidad pagada","email marketing","banners","whatsapp masivo","campanas en redes"],
+  resp:["El catálogo de marketing de Passline incluye: campañas en Instagram/Facebook, email segmentado por historial de compra, diseño gráfico, banners destacados en la plataforma, WhatsApp masivo, vía pública/LED móvil y spots de radio.","No tienen precio publicado — se cotizan según el evento. Puedo dejarte el interés registrado para que el equipo comercial te contacte con tu contexto ya armado."],
+  chips:["serviciosOperativos","asesor"] });
+
+K("serviciosOperativos", { aud:"productora", fuente:"prod",
+  kw:["totem","totems","autoservicio","punto de venta fisico","control de acceso","acreditacion","el dia del evento","arriendo de vallas"],
+  resp:["Para el día D: tótems de autoservicio (menos filas), POS físicos con impresión sincronizada, control de acceso y credenciales, soporte técnico en terreno, arriendo de vallas y hasta búsqueda de venues."],
+  chips:["servicios","recursos"] });
+
+K("recursos", { aud:"productora", fuente:"web",
+  kw:["manuales","guias para productores","apps de acreditacion","instructivo rrpp","material de apoyo"],
+  resp:["En passline.com/recursos: manual para cargar eventos, manual de acreditación, instructivo para RRPP, guía de difusión por link, logos oficiales y las apps de acreditación."],
+  chips:["serviciosOperativos"] });
+
+K("paisesLicencia", { aud:"productora", fuente:"web",
+  kw:["en que paises","licencia internacional","no esta en mi pais","operar passline en otro pais"],
+  resp:["Passline opera en 19 países de América y Europa. Si tu país aún no tiene presencia directa, existen licencias internacionales — eso se conversa directo con el equipo."],
+  chips:["asesor","confianza"] });
+
+/* ---------- INFORMACIÓN QUE NO ESTÁ EN LA BASE (anti-alucinación) ---------- */
+K("fueraDeBase", { aud:null, fuente:null,
+  kw:["a que hora abren","a que hora empieza","lineup","line up","quienes tocan","edad minima","mayores de edad","estacionamiento","se puede entrar con","que puedo llevar","hay reventa","cuanto cuesta la entrada de","precio de la entrada para"],
+  resp:["Ese dato lo define cada evento y no está en mi base — prefiero no inventártelo. Aparece en la ficha del evento en Passline.","En una integración real, aquí consultaría la ficha en vivo y te lo diría al tiro. ¿Te ayudo con otra cosa mientras?"],
+  chips:["buscarEventos","asesor"] });
+
+/* ---------- SOCIALES ---------- */
+K("saludo", { aud:null, fuente:null, social:true,
+  kw:["hola","buenas","buenos dias","buenas tardes","hey","que tal","holi","wena"],
+  resp:["¡Hola! 👋 ¿En qué te ayudo hoy?"],
+  chips:["flujoEntrada","buscarEventos","reembolso","wizardStart","comisiones"] });
+
+K("gracias", { aud:null, fuente:null, social:true,
+  kw:["gracias","muchas gracias","se agradece","genial gracias","perfecto gracias","vale gracias"],
+  resp:["¡De nada! Cualquier otra cosa, aquí estoy 😊"],
+  chips:[] });
+
+K("despedida", { aud:null, fuente:null, social:true,
+  kw:["chao","adios","hasta luego","nos vemos","bye"],
+  resp:["¡Que te vaya bien! Y si vuelves con dudas, quedo atento 👋"],
+  chips:[] });
+
+K("fueraTema", { aud:null, fuente:null, social:true,
+  kw:["cuentame un chiste","dime un chiste","escribe un poema","receta de","como esta el clima","hazme la tarea","quien es el presidente"],
+  resp:["Jaja, para eso no soy el indicado 😄 Lo mío son las entradas y los eventos. ¿Te busco un panorama para este finde?"],
+  chips:["buscarEventos"] });
+
+/* ============================ FLUJOS ================================
+   Conversaciones de varios pasos con slots — el usuario puede
+   responder con chips o texto libre, y puede hacer preguntas al bot
+   en medio del flujo sin romperlo (se responde y se retoma). ======= */
+
+const FLUJOS = {
+
+  /* -------- CASO A: entrada no recibida / perdida -------- */
+  flujoEntrada: {
+    triggerKw:["no me llego","no me llegaron","no llegaron","nunca me llego","nunca llegaron","no recibi","no he recibido","no encuentro mi entrada","perdi mi entrada","no aparece mi entrada","no tengo mi entrada","borre el correo","problema con mi entrada","no me ha llegado"],
+    aud:"comprador",
+    inicio(ctx){
+      bot(["Uy, eso lo resolvemos ya mismo 💪 Lo primero: a veces el correo llega a spam o promociones, y la entrada siempre queda además en \"Mis Entradas\" dentro de tu cuenta."]);
+      if (S.correo){ // contexto: el correo ya se dio antes en la conversación — no se vuelve a pedir
+        S.flujo.datos.id = S.correo;
+        bot(["Uso el correo que me diste (" + S.correo + ") 👌"]);
+        pedirPaso("evento");
+      } else {
+        pedirPaso("correo");
+      }
+    },
+    pasos:{
+      correo:{
+        pregunta:"Para buscar tu compra, ¿me dices el correo con el que compraste? (también sirve el n° de orden)",
+        chips:[],
+        procesar(texto){
+          if (esCorreo(texto)) { S.correo = texto.trim().split(/\s+/).find(w=>w.includes("@")); S.flujo.datos.id = S.correo; }
+          else if (esOrden(texto)) { S.flujo.datos.id = "orden " + texto.match(/#?\d{5,}/)[0]; }
+          else if (/no (me acuerdo|recuerdo|se|lo tengo)/.test(norm(texto))) {
+            bot(["No hay problema — dame el correo que probablemente usaste, o el número de orden si lo tienes en algún comprobante."]);
+            return "repetir";
+          } else {
+            bot(["Mmm, eso no me calza como correo ni como número de orden 🤔 ¿Me lo confirmas? Por ejemplo: nombre@correo.com"]);
+            return "repetir";
+          }
+          return "evento";
+        }
+      },
+      evento:{
+        pregunta:"¿Para qué evento era la compra?",
+        chips(){ return EVENTOS.slice(0,3).map(e=>({label:e.title, valor:e.title})).concat([{label:"Otro evento", valor:"otro"}]); },
+        procesar(texto){
+          const t = norm(texto);
+          const ev = EVENTOS.find(e => norm(e.title).includes(t) || t.includes(norm(e.title)) || tokens(e.title).some(w=>w.length>4 && t.includes(norm(w))));
+          S.flujo.datos.evento = ev ? ev.title : texto;
+          S.flujo.datos.eventoObj = ev || EVENTOS[0];
+          return "buscar";
+        }
+      },
+      buscar:{
+        accion(ctx){
+          registrarAccion("Búsqueda simulada de la compra ("+ (S.flujo.datos.id||"sin identificador") +")");
+          burbujAccion("Buscando tu compra en Passline… (simulación)", 1500, ()=>{
+            const ev = S.flujo.datos.eventoObj;
+            cardTicket(ev, S.flujo.datos.id);
+            bot(["¡La encontré! 🎉 (datos simulados) Ahí está tu compra con sus 2 entradas vigentes.","¿Te la reenvío al correo, o no era esta la compra?"],
+              null,
+              [{label:"📩 Reenviar a mi correo", accion:"accion:reenviar"},{label:"No era esta compra", accion:"accion:noEra"},{label:"Listo, ¡gracias!", accion:"accion:resuelto"}]);
+            S.flujo.paso = "resolver";
+          });
+        }
+      },
+      resolver:{
+        procesar(texto){
+          const t = norm(texto);
+          if (/(si|reenvia|reenviar|mandala|enviala|correo)/.test(t)) return acciones.reenviar(), "fin";
+          if (/(no era|otra compra|no es esa)/.test(t)) return acciones.noEra(), "fin";
+          if (/(listo|gracias|si era|perfecto|ya la vi)/.test(t)) return acciones.resuelto(), "fin";
+          return null; // que el motor general intente responder
+        }
+      }
+    },
+    acciones:{
+      reenviar(){
+        registrarAccion("Reenvío simulado del eTicket al correo");
+        burbujAccion("Reenviando tu eTicket… (simulación)", 1100, ()=>{
+          bot(["Listo ✅ Reenviada" + (S.correo ? " a " + S.correo : "") + " (simulado). Revisa también spam/promociones.","En la versión real conectada a Passline, este reenvío sería efectivo al instante. ¿Algo más?"]);
+          finFlujo(true);
+        });
+      },
+      noEra(){
+        bot(["Entonces mejor que lo revise una persona con acceso a tus órdenes reales. Te derivo con todo el contexto para que no tengas que repetir nada 👇"]);
+        hacerHandoff("sin_resolver");
+        finFlujo(false);
+      },
+      resuelto(){
+        bot(["¡Buenísima! 🙌 Cualquier cosa con tus entradas, ya sabes dónde encontrarme."]);
+        registrarAccion("Caso resuelto por el asistente (sin humano)");
+        finFlujo(true);
+      }
+    }
+  },
+
+  /* -------- CASO B: evento cancelado / cambio -------- */
+  flujoCancelado: {
+    triggerKw:["se cancelo","evento cancelado","cancelaron el evento","se suspendio","suspendieron","cambiaron la fecha","cambio de fecha","lo reprogramaron","evento reprogramado","se aplazo"],
+    aud:"comprador",
+    inicio(ctx){
+      bot(["Qué lata cuando pasa eso 😔 Te explico exactamente qué corresponde según los términos de Passline."]);
+      pedirPaso("tipo");
+    },
+    pasos:{
+      tipo:{
+        pregunta:"¿El evento fue cancelado del todo, o cambió de fecha/lugar?",
+        chips:[{label:"Cancelado", valor:"cancelado"},{label:"Cambio de fecha o lugar", valor:"cambio"},{label:"No estoy seguro", valor:"nose"}],
+        procesar(texto){
+          const t = norm(texto);
+          S.flujo.datos.tipo = /cancel/.test(t) ? "cancelado" : (/cambi|fecha|lugar|reprogram/.test(t) ? "cambio" : "nose");
+          return "explicar";
+        }
+      },
+      explicar:{
+        accion(){
+          const tipo = S.flujo.datos.tipo;
+          if (tipo === "cancelado"){
+            bot(["Evento cancelado → corresponde reembolso. El proceso según los T&C:","La productora autoriza la devolución y Passline la procesa por transferencia bancaria en un plazo de hasta 20 días hábiles. La responsabilidad de reembolsar es de la productora organizadora."], "tyc");
+          } else if (tipo === "cambio"){
+            bot(["Cambio sustancial (fecha, hora o lugar) → puedes pedir reembolso si no te acomoda la nueva condición, con autorización del organizador, por transferencia en hasta 20 días hábiles.","Si la nueva fecha te sirve, tu misma entrada sigue siendo válida — no hay que hacer nada."], "tyc");
+          } else {
+            bot(["Revisemos: si en la ficha del evento aparece \"cancelado\" o te llegó un correo de Passline avisando, es cancelación formal. Si solo viste rumores, espera el aviso oficial antes de pedir devolución."]);
+          }
+          bot(["¿Quieres que deje iniciada una solicitud de devolución (simulada) para que veas cómo sería el proceso?"], null,
+            [{label:"Sí, iniciar solicitud", accion:"accion:solicitar"},{label:"No por ahora", accion:"accion:cerrar"}]);
+          S.flujo.paso = "resolver";
+        }
+      },
+      resolver:{
+        procesar(texto){
+          const t = norm(texto);
+          if (/(si|iniciar|dale|ok|bueno|hagamoslo)/.test(t)) return acciones2.solicitar(), "fin";
+          if (/(no|despues|luego|no por ahora)/.test(t)) return acciones2.cerrar(), "fin";
+          return null;
+        }
+      }
+    },
+    acciones:{}
+  },
+
+  /* -------- CASO C: wizard de creación de evento (lead productora) -------- */
+  wizard: {
+    triggerKw:["quiero hacer una fiesta","quiero hacer un evento","quiero organizar","estoy organizando","voy a hacer un festival","quiero hacer un concierto","hacer una tocata","organizar una fiesta","empezar ahora","armar mi evento","hagamos mi evento"],
+    aud:"productora",
+    inicio(ctx, textoInicial){
+      // Pre-llenado desde el mensaje inicial (comprensión, no formulario)
+      const d = S.flujo.datos;
+      const t = norm(textoInicial||"");
+      const tipos = [["fiesta","Fiesta"],["festival","Festival"],["concierto","Concierto"],["tocata","Tocata"],["seminario","Seminario"],["conferencia","Conferencia"],["obra","Teatro"],["teatro","Teatro"],["partido","Deportivo"],["torneo","Deportivo"],["expo","Exposición"],["feria","Feria"]];
+      for (const [kw,label] of tipos){ if (t.includes(kw)) { d.tipo = label; break; } }
+      const n = parseNumero(t); if (n && n>=20 && n<=200000) d.aforo = n;
+      for (const c of CIUDADES){ if (t.includes(c)) { d.ciudad = c.replace(/\b\w/g,ch=>ch.toUpperCase()); break; } }
+
+      const entendido = [];
+      if (d.tipo) entendido.push(d.tipo.toLowerCase());
+      if (d.aforo) entendido.push("para ~" + d.aforo.toLocaleString("es-CL") + " personas");
+      if (d.ciudad) entendido.push("en " + d.ciudad);
+      if (entendido.length){
+        bot(["¡Buenísimo! 🙌 Anoté: " + entendido.join(", ") + ". Publicar en Passline es gratis — completemos lo que falta."]);
+        registrarAccion("Wizard de evento: datos capturados del primer mensaje (" + entendido.join(", ") + ")");
+      } else {
+        bot(["¡Vamos con eso! 🙌 Publicar tu evento en Passline es gratis. Te hago un par de preguntas cortas y te dejo todo resumido."]);
+      }
+      pedirPaso(siguientePasoWizard());
+    },
+    pasos:{
+      tipo:{
+        pregunta:"¿Qué tipo de evento es?",
+        chips:[{label:"Fiesta / Concierto", valor:"Fiesta"},{label:"Festival", valor:"Festival"},{label:"Deportivo", valor:"Deportivo"},{label:"Teatro / Comedia", valor:"Teatro"},{label:"Otro", valor:"Otro"}],
+        procesar(texto){ S.flujo.datos.tipo = texto.trim().slice(0,40); return siguientePasoWizard(); }
+      },
+      ciudad:{
+        pregunta:"¿En qué ciudad sería?",
+        chips:[{label:"Santiago",valor:"Santiago"},{label:"Valparaíso / Viña",valor:"Valparaíso"},{label:"Concepción",valor:"Concepción"},{label:"Otra",valor:"Otra ciudad"}],
+        procesar(texto){ S.flujo.datos.ciudad = texto.trim().slice(0,40); return siguientePasoWizard(); }
+      },
+      fecha:{
+        pregunta:"¿Para cuándo lo tienes pensado?",
+        chips:[{label:"Este mes",valor:"Este mes"},{label:"En 1–3 meses",valor:"1–3 meses"},{label:"En 3–6 meses",valor:"3–6 meses"},{label:"Aún sin fecha",valor:"Por definir"}],
+        procesar(texto){ S.flujo.datos.fecha = texto.trim().slice(0,30); return siguientePasoWizard(); }
+      },
+      aforo:{
+        pregunta:"¿Cuántas personas esperas más o menos?",
+        chips:[{label:"Menos de 500",valor:"400"},{label:"500 – 2.000",valor:"1500"},{label:"2.000 – 20.000",valor:"8000"},{label:"Más de 20.000",valor:"25000"}],
+        procesar(texto){
+          const n = parseNumero(texto);
+          if (!n){ bot(["¿Un número aproximado? Aunque sea a ojo — sirve para orientar al equipo 😉"]); return "repetir"; }
+          S.flujo.datos.aforo = n; return siguientePasoWizard();
+        }
+      },
+      entradas:{
+        pregunta:"¿Ya tienes pensados los tipos de entrada?",
+        chips:[{label:"Solo General",valor:"General"},{label:"General + VIP",valor:"General y VIP"},{label:"Varias categorías",valor:"Varias categorías"},{label:"Aún no",valor:"Por definir"}],
+        procesar(texto){ S.flujo.datos.entradas = texto.trim().slice(0,40); return "resumen"; }
+      },
+      resumen:{
+        accion(){
+          const d = S.flujo.datos;
+          const aforoNum = typeof d.aforo === "number" ? d.aforo : parseNumero(String(d.aforo||"")) || 0;
+          const clas = (aforoNum >= 2000 || d.fecha === "Este mes") ? "caliente" : "tibio";
+          d.clasificacion = clas;
+          registrarAccion("Lead de evento calificado (" + clas + ") con datos completos");
+          cardLead(d, clas);
+          bot(["Con esto, el equipo de Passline te contactaría con recomendaciones concretas — que es justo como funciona su onboarding, pero con tu información ya ordenada y calificada.","¿Lo dejo enviado (simulado)?"], null,
+            [{label:"🚀 Enviar al equipo comercial", accion:"accion:enviarLead"},{label:"Corregir algo", accion:"accion:corregir"}]);
+          S.flujo.paso = "resolver";
+        }
+      },
+      resolver:{
+        procesar(texto){
+          const t = norm(texto);
+          if (/(si|enviar|dale|mandalo|ok|listo)/.test(t)) return acciones3.enviarLead(), "fin";
+          if (/(corregir|cambiar|editar|no)/.test(t)) return acciones3.corregir(), "fin";
+          return null;
+        }
+      }
+    }
+  },
+
+  /* -------- CASO D: calculadora de comisión -------- */
+  calc: {
+    triggerKw:["calcula la comision","calcular la comision","cuanto pagaria de comision","simula la comision","calculalo"],
+    aud:"productora",
+    inicio(){
+      pedirPaso("precio");
+    },
+    pasos:{
+      precio:{
+        pregunta:"¿A qué precio piensas vender cada entrada? (aprox.)",
+        chips:[{label:"$5.000",valor:"5000"},{label:"$10.000",valor:"10000"},{label:"$20.000",valor:"20000"}],
+        procesar(texto){
+          const n = parseNumero(texto);
+          if (!n || n < 100){ bot(["¿Me das un valor aproximado en pesos? Ej: $8.000"]); return "repetir"; }
+          S.flujo.datos.precio = n; return "cantidad";
+        }
+      },
+      cantidad:{
+        pregunta:"¿Y cuántas entradas estimas vender?",
+        chips:[{label:"100",valor:"100"},{label:"300",valor:"300"},{label:"1.000",valor:"1000"}],
+        procesar(texto){
+          const n = parseNumero(texto);
+          if (!n){ bot(["Un número aproximado me sirve 😉"]); return "repetir"; }
+          S.flujo.datos.cantidad = n; return "calcular";
+        }
+      },
+      calcular:{
+        accion(){
+          const p = S.flujo.datos.precio, q = S.flujo.datos.cantidad;
+          const fee = Math.max(p*0.15, 500);
+          const feeTxt = p*0.15 < 500 ? fmtCLP(500) + " (aplica el mínimo, porque 15% de " + fmtCLP(p) + " = " + fmtCLP(p*0.15) + ")" : fmtCLP(fee) + " (15%)";
+          registrarAccion("Cálculo referencial de comisión: entrada " + fmtCLP(p) + " × " + q.toLocaleString("es-CL"));
+          cardCalculo(p,q,fee,feeTxt);
+          bot(["Cálculo referencial con la comisión publicada en los T&C (15%, mínimo $500 IVA inc.). El número fino te lo confirma el equipo de Passline según tu caso.","¿Armamos el resumen de tu evento para dejarlo listo?"], "tycProd",
+            [{label:"Sí, armar mi evento", accion:"accion:irWizard"},{label:"Por ahora no", accion:"accion:cerrarCalc"}]);
+          S.flujo.paso = "resolver";
+        }
+      },
+      resolver:{
+        procesar(texto){
+          const t = norm(texto);
+          if (/(si|armar|dale|ok)/.test(t)) return acciones4.irWizard(), "fin";
+          if (/(no|despues|luego)/.test(t)) return acciones4.cerrarCalc(), "fin";
+          return null;
+        }
+      }
+    }
+  },
+};
+
+function siguientePasoWizard(){
+  const d = S.flujo.datos;
+  if (!d.tipo) return "tipo";
+  if (!d.ciudad) return "ciudad";
+  if (!d.fecha) return "fecha";
+  if (!d.aforo) return "aforo";
+  if (!d.entradas) return "entradas";
+  return "resumen";
+}
+
+/* Acciones nombradas de flujos (accesibles desde chips de cards) */
+const acciones = {};
+Object.assign(acciones, FLUJOS.flujoEntrada.acciones);
+const acciones2 = {
+  solicitar(){
+    registrarAccion("Solicitud de devolución iniciada (simulada)");
+    burbujAccion("Registrando tu solicitud… (simulación)", 1200, ()=>{
+      cardTimeline();
+      bot(["Quedó registrada (simulada) ✅ En una integración real, esto crearía el caso en el sistema de Passline y te llegaría el seguimiento por correo."]);
+      finFlujo(true);
+    });
+  },
+  cerrar(){ bot(["Perfecto. Si el aviso oficial llega, ya sabes qué corresponde y los plazos 👍"]); finFlujo(true); }
+};
+const acciones3 = {
+  enviarLead(){
+    registrarAccion("Lead enviado al equipo comercial (simulado)");
+    burbujAccion("Enviando tu resumen al equipo… (simulación)", 1200, ()=>{
+      bot(["¡Enviado! ✅ (simulado) Un asesor de Passline te contactaría con recomendaciones para tu " + (S.flujo && S.flujo.datos.tipo ? S.flujo.datos.tipo.toLowerCase() : "evento") + ".","Mientras tanto, ¿te explico las comisiones o cómo se configuran las entradas?"], null,
+        [{label:"💰 Comisiones", accion:"kb:comisiones"},{label:"🎫 Tipos de entrada", accion:"kb:entradasPrecio"}]);
+      finFlujo(true);
+    });
+  },
+  corregir(){
+    bot(["Dale — dime qué dato cambio (tipo, ciudad, fecha, aforo o entradas) y lo ajusto."]);
+    // se mantiene el flujo en 'resolver'; texto libre tipo "la ciudad es Temuco" se procesa abajo
+    S.flujo.paso = "corrigiendo";
+  }
+};
+const acciones4 = {
+  irWizard(){
+    const datosPrevios = {}; // el precio ayuda como contexto
+    finFlujo(true);
+    iniciarFlujo("wizard", "");
+  },
+  cerrarCalc(){ bot(["Listo 👍 Cuando quieras simulamos otros números o armamos tu evento."]); finFlujo(true); }
+};
+
+/* ====================== MOTOR DE COMPRENSIÓN ======================== */
+function tokenCoincide(tok, palabra){
+  return tok === palabra || (tok.length>=5 && palabra.length>=5 && lev1(tok,palabra));
+}
+function puntuarEntrada(texto, kws){
+  const t = norm(texto);
+  const toks = tokens(texto);
+  let score = 0; let matched = [];
+  for (const kw of kws){
+    const nkw = norm(kw);
+    if (nkw.includes(" ")){
+      if (t.includes(nkw)) { score += nkw.length; matched.push(kw); continue; }
+      // tolerancia a typos también en frases: cada palabra significativa
+      // de la frase debe aparecer (con fuzzy) en el texto
+      const partes = nkw.split(" ").filter(w=>w.length>=3);
+      if (partes.length >= 2 && partes.every(p => toks.some(tok => tokenCoincide(tok,p)))){
+        score += nkw.length - 2; matched.push(kw);
+      }
+    } else {
+      for (const tok of toks){
+        if (tokenCoincide(tok, nkw)){ score += nkw.length; matched.push(kw); break; }
+      }
+    }
+  }
+  return {score, matched};
+}
+
+/* Comprensión por patrones: cubre conjugaciones y frases naturales que
+   una lista de keywords literal jamás alcanzaría. */
+const REGEX_FLUJOS = [
+  { id:"flujoEntrada", re:/(nunca|no|aun no|todavia no)( me| nos)? (lleg\w+|recib\w+|ha llegado|han llegado)/, req:/(entrada|ticket|boleto|compra|correo|eticket|mail)/ },
+  { id:"flujoEntrada", re:/(perdi|borre|elimine|no encuentro|no aparece|no veo|no tengo|donde esta|extravie)\w*/, req:/(entrada|ticket|boleto|eticket)/ },
+  { id:"flujoCancelado", re:/(se cancelo|lo cancelaron|la cancelaron|fue cancelado|se suspendio|lo suspendieron|se reprogramo|lo reprogramaron|cambiaron la fecha|le cambiaron la fecha|se aplazo|lo aplazaron|dicen que se cancel)/, req:null },
+  { id:"wizard", re:/(quiero|queremos|voy a|vamos a|estoy|estamos|me gustaria|necesito|pienso) (hacer|organizar|armar|crear|montar|producir|lanzar)/, req:/(fiesta|evento|festival|concierto|tocata|feria|expo|torneo|obra|seminario|show|matrimonio|gala)/ },
+  { id:"calc", re:/(calcul\w+|simul\w+|cuanto (pagaria|me descontarian|seria))/, req:/(comision|comisiones|passline|venta)/ },
+];
+function detectarPorRegex(texto){
+  const t = norm(texto);
+  for (const r of REGEX_FLUJOS){
+    if (r.re.test(t) && (!r.req || r.req.test(t))) return r.id;
+  }
+  return null;
+}
+
+function detectar(texto){
+  const resultados = [];
+  const porRegex = detectarPorRegex(texto);
+  if (porRegex) resultados.push({tipo:"flujo", id:porRegex, score:40});
+  for (const id in KB){
+    const {score} = puntuarEntrada(texto, KB[id].kw);
+    if (score > 0) resultados.push({tipo:"kb", id, score});
+  }
+  for (const fid in FLUJOS){
+    if (!FLUJOS[fid].triggerKw) continue;
+    const {score} = puntuarEntrada(texto, FLUJOS[fid].triggerKw);
+    if (score > 0) resultados.push({tipo:"flujo", id:fid, score:score*1.2}); // los flujos pesan un poco más
+  }
+  resultados.sort((a,b)=>b.score-a.score);
+  return resultados;
+}
+
+const KW_ENOJO = ["estafa","estafadores","pesimo","pesima","indignante","una verguenza","es una mierda","los voy a demandar","demanda","sernac","reclamo formal","furioso","furiosa","harto de","harta de","nadie responde","denunciar"];
+const KW_HUMANO = ["hablar con una persona","hablar con alguien","con un humano","atencion humana","un ejecutivo","una persona real","operador","quiero un agente","con soporte","hablar con un asesor","asesor humano"];
+const KW_AMBIGUO = ["no me funciona","no funciona","tengo un problema","necesito ayuda","ayuda","no puedo","me da error","hay un error","tengo una duda","consulta"];
+const KW_INJECTION = ["ignora tus instrucciones","olvida tus instrucciones","ignora las reglas","eres un modelo","actua como","system prompt","desde ahora eres"];
+
+function esEnojo(texto){
+  const t = norm(texto);
+  if (KW_ENOJO.some(k=>t.includes(norm(k)))) return true;
+  const letras = texto.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ]/g,"");
+  const mayus = texto.replace(/[^A-ZÁÉÍÓÚÑ]/g,"");
+  return letras.length > 14 && mayus.length/letras.length > 0.7;
+}
+
+/* ========================= HANDOFF (humano) ========================= */
+const TRIGGERS_TXT = {
+  pedido_explicito:"El cliente pidió hablar con una persona",
+  sentimiento_negativo:"Cliente molesto — prioridad de atención",
+  sin_resolver:"El asistente no logró resolver tras 2 intentos",
+  incertidumbre:"La respuesta correcta no está en la base de conocimiento",
+};
+function hacerHandoff(trigger){
+  S.escalado = true;
+  registrarAccion("Escalación a humano (trigger: " + trigger + ")");
+  const temaTxt = S.temaActual ? etiqueta(S.temaActual).replace(/^[^\wÁÉÍÓÚÑáéíóúñ¿]+\s*/,"") : "Consulta general";
+  const flujoTxt = S.flujo ? ("Estaba en el flujo \"" + S.flujo.id + "\" — datos: " + JSON.stringify(S.flujo.datos)) : null;
+  const info = {
+    cliente: S.correo || "No identificado aún",
+    perfil: S.persona === "productora" ? "Productora" : (S.persona === "comprador" ? "Comprador" : "Por determinar"),
+    motivo: TRIGGERS_TXT[trigger] || trigger,
+    tema: temaTxt,
+    detalle: flujoTxt,
+    acciones: S.acciones.slice(-4),
+  };
+  // la tarjeta entra a la MISMA cola que las burbujas para respetar el orden
+  colaBurbujas = colaBurbujas.then(()=>{ cardHandoff(info); });
+  bot(["Listo — quedaste en la cola del equipo con todo el contexto de nuestra conversación. No vas a tener que explicar nada de nuevo 👍","(En esta demo la derivación es simulada; en producción llegaría al inbox del equipo de Passline en tiempo real.)"]);
+}
+
+/* ==================== CAPA IA (Gemini, con respaldo local) ===========
+   Arquitectura híbrida: se intenta primero la IA real (misma lógica de
+   "candado" anti-alucinación que usa Tino en producción — la IA solo
+   puede afirmar lo que está en su información del negocio). Si la IA no
+   está disponible, se demora más de lo tolerable, o responde algo
+   inválido, se cae en silencio al motor de reglas local — el usuario
+   nunca ve un error ni un cuelgue. Así la demo nunca depende 100% de
+   que la llamada de red funcione en vivo.
+======================================================================= */
+const IA_ENDPOINT = "/api/chat";
+const IA_TIMEOUT_MS = 6000;
+let iaDisponible = true; // se apaga sola si el servidor confirma que no hay key configurada (503)
+
+async function intentarIA(texto){
+  if (!iaDisponible) return null;
+  const controller = new AbortController();
+  const venceEn = setTimeout(()=>controller.abort(), IA_TIMEOUT_MS);
+  const t0 = (typeof performance !== "undefined") ? performance.now() : 0;
+  try{
+    const historialPrevio = S.historial.slice(0, -1).slice(-8); // excluye el mensaje que se acaba de agregar
+    const r = await fetch(IA_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      signal: controller.signal,
+      body: JSON.stringify({ mensaje: texto, historial: historialPrevio, persona: S.persona }),
+    });
+    clearTimeout(venceEn);
+    if (!r.ok){
+      if (r.status === 503) iaDisponible = false; // sin GEMINI_API_KEY en Vercel → no reintentar más esta sesión
+      return null;
+    }
+    const data = await r.json();
+    if (!data || !["responder","iniciar_flujo","escalar"].includes(data.accion)) return null;
+    data._latenciaMs = Math.round(((typeof performance !== "undefined") ? performance.now() : 0) - t0);
+    return data;
+  } catch(err){
+    clearTimeout(venceEn);
+    return null; // timeout, red caída, CORS, JSON roto, lo que sea → silencioso, cae al motor local
+  }
+}
+
+function manejarRespuestaIA(r, textoOriginal){
+  S.fallos = 0;
+  const lat = (typeof r._latenciaMs === "number") ? (r._latenciaMs + "ms") : "?";
+
+  if (r.accion === "iniciar_flujo" && FLUJOS[r.flujo]){
+    metaPrefijo = "IA (Gemini) detectó la intención · latencia: " + lat;
+    iniciarFlujo(r.flujo, textoOriginal);
+    return;
+  }
+
+  if (r.accion === "escalar"){
+    meta("IA (Gemini) · trigger: " + (r.trigger || "incertidumbre") + " · latencia: " + lat);
+    if (r.respuesta){
+      bot([r.respuesta]);
+      setTimeout(()=>hacerHandoff(r.trigger || "incertidumbre"), 700);
+    } else {
+      hacerHandoff(r.trigger || "incertidumbre");
+    }
+    return;
+  }
+
+  // accion === "responder"
+  let chips = (r.chips_sugeridos || []).map(chipDe).filter(Boolean);
+  if (!chips.length){
+    const base = S.persona === "productora" ? ["comisiones","liquidaciones","asesor"] : ["flujoEntrada","reembolso","asesor"];
+    chips = base.map(chipDe);
+  }
+  meta("IA (Gemini) · respuesta generada" + (r.fuente ? " · fuente: " + (FUENTES[r.fuente] || r.fuente) : "") + " · latencia: " + lat);
+  bot([r.respuesta || "Mmm, no tengo una respuesta clara para eso — ¿me lo cuentas de otra forma?"], r.fuente || null, chips);
+}
+
+/* ===================== PROCESAMIENTO PRINCIPAL ====================== */
+async function procesarTexto(texto){
+  S.botOcupado = true; // se marca de inmediato: evita que un segundo mensaje se cuele mientras la IA está en vuelo
+  metaPrefijo = null;
+  S.historial.push({rol:"cliente", texto});
+  const t = norm(texto);
+
+  // 0) intento de manipulación → se trata como consulta normal (regla 10 del núcleo)
+  if (KW_INJECTION.some(k=>t.includes(norm(k)))){
+    meta("intención: intento de cambio de reglas · acción: ignorar y seguir normal");
+    bot(["Jaja, buen intento 😄 Yo sigo siendo el asistente de Passline igual. ¿Te ayudo con tus entradas o tu evento?"], null, null);
+    sugerirMenu();
+    return;
+  }
+
+  // 1) cliente molesto → empatía 1 frase + escalar (regla 6)
+  if (esEnojo(texto)){
+    meta("trigger: sentimiento_negativo · acción: empatía + derivación");
+    bot(["Te entiendo, y lamento que hayas tenido esta experiencia — es válido que estés molesto."]);
+    setTimeout(()=>hacerHandoff("sentimiento_negativo"), 900);
+    return;
+  }
+
+  // 2) pide humano → escalar de inmediato, sin insistir (regla 7)
+  if (KW_HUMANO.some(k=>t.includes(norm(k)))){
+    meta("trigger: pedido_explicito · acción: derivación inmediata");
+    bot(["Por supuesto — te derivo de inmediato."]);
+    setTimeout(()=>hacerHandoff("pedido_explicito"), 700);
+    return;
+  }
+
+  // 3) si hay flujo activo → el texto es respuesta del paso (o pregunta intercalada)
+  if (S.flujo){
+    manejarTextoEnFlujo(texto);
+    return;
+  }
+
+  // 3b) correo suelto sin flujo activo → guardarlo y preguntar el motivo
+  if (esCorreo(texto) && t.split(" ").length <= 3){
+    S.correo = texto.trim().split(/\s+/).find(w=>w.includes("@"));
+    meta("dato capturado: correo · falta la intención");
+    bot(["Anotado 📝 ¿Y ese correo es por un tema con tus entradas, o para otra cosa?"], null, [
+      {label:"🎟️ No me llegó mi entrada", accion:"flujo:flujoEntrada"},
+      {label:"Otra consulta", accion:"nada"},
+    ]);
+    return;
+  }
+
+  // 3c) capa IA (Gemini) — se intenta primero; si responde bien, se usa y se corta acá
+  // Se muestra "escribiendo…" de inmediato: la llamada de red puede tardar hasta IA_TIMEOUT_MS,
+  // y sin esto la pantalla se ve congelada varios segundos (mala señal en una demo en vivo).
+  mostrarTyping();
+  const respuestaIA = await intentarIA(texto);
+  if (respuestaIA){
+    manejarRespuestaIA(respuestaIA, texto);
+    return;
+  }
+  metaPrefijo = "motor local (respaldo — IA no disponible o sin respuesta a tiempo)";
+
+  // 4) detección de intención (motor de reglas — respaldo automático de la IA)
+  const dets = detectar(texto);
+  const top = dets[0];
+
+  // 4a) mensaje ambiguo sin señal clara → UNA pregunta aclaratoria, no una respuesta al azar
+  const esAmbiguo = KW_AMBIGUO.some(k=>t===norm(k) || (t.includes(norm(k)) && t.length < norm(k).length + 12));
+  if ((!top || top.score < 6) && esAmbiguo){
+    meta("intención: ambigua · acción: pregunta aclaratoria (sin adivinar)");
+    S.fallos = 0;
+    bot(["Te ayudo al tiro — para no adivinar: ¿el problema es con tu pago, con tu entrada, con tu cuenta… o con un evento que estás organizando?"], null, [
+      {label:"💳 Mi pago", accion:"kb:pago"},
+      {label:"🎟️ Mi entrada", accion:"flujo:flujoEntrada"},
+      {label:"👤 Mi cuenta", accion:"kb:cuenta"},
+      {label:"🎤 Mi evento (soy productora)", accion:"kb:crearEvento"},
+    ]);
+    return;
+  }
+
+  if (top && top.score >= 6){
+    S.fallos = 0;
+    if (top.tipo === "flujo"){ iniciarFlujo(top.id, texto); }
+    else { responderKB(top.id, dets); }
+    return;
+  }
+
+  // 5) sin match → honestidad; al 2º intento fallido, derivar (trigger sin_resolver)
+  S.fallos++;
+  if (S.fallos >= 2){
+    meta("trigger: sin_resolver (2 intentos) · acción: ofrecer derivación");
+    bot(["No te estoy entendiendo bien, y prefiero no adivinar ni inventarte una respuesta 🙏","¿Te derivo con una persona del equipo? Le paso todo el contexto de la conversación."], null, [
+      {label:"Sí, con una persona", accion:"handoff:sin_resolver"},
+      {label:"Intento explicarlo de nuevo", accion:"nada"},
+    ]);
+    S.fallos = 0;
+    return;
+  }
+  meta("intención: no reconocida (intento 1) · acción: pedir reformulación + opciones");
+  bot(["Mmm, no estoy seguro de haberte entendido 🤔 ¿Me lo dices con otras palabras? O quizás alguna de estas opciones calza:"], null, null);
+  sugerirMenu();
+}
+
+function responderKB(id, dets){
+  const e = KB[id];
+  if (!e) return;
+  S.temaActual = id;
+  if (e.aud) S.persona = (e.aud === "productora") ? "productora" : "comprador";
+  if (!e.social) registrarAccion("Informó sobre: " + etiqueta(id));
+  meta("intención: " + id + " · confianza: alta" + (e.fuente ? " · fuente: " + FUENTES[e.fuente] : "") + (S.persona ? " · perfil: " + S.persona : ""));
+
+  // segunda intención clara y distinta → ofrecerla como chip (pregunta doble)
+  let chipsExtra = [];
+  if (dets && dets.length > 1){
+    const seg = dets.find(d => d.tipo==="kb" && d.id !== id && d.score >= 8 && !KB[d.id].social && !(e.chips||[]).includes(d.id));
+    if (seg) chipsExtra.push({label:"También: " + etiqueta(seg.id), accion:"kb:" + seg.id});
+  }
+  bot(e.resp, e.fuente, null);
+  ponerChips((e.chips||[]).map(cid=>chipDe(cid)).concat(chipsExtra).filter(Boolean));
+}
+
+/* ------------------------ flujos: mecánica ------------------------- */
+function iniciarFlujo(fid, textoInicial){
+  const f = FLUJOS[fid];
+  if (!f) return;
+  S.flujo = { id:fid, paso:null, datos:{} };
+  if (f.aud) S.persona = (f.aud === "productora") ? "productora" : "comprador";
+  S.temaActual = fid;
+  meta("flujo iniciado: " + fid + (S.persona ? " · perfil: " + S.persona : ""));
+  registrarAccion("Inició flujo: " + fid);
+  f.inicio(S, textoInicial);
+}
+function pedirPaso(pasoId){
+  if (!S.flujo) return;
+  if (pasoId === "fin"){ return; }
+  S.flujo.paso = pasoId;
+  const paso = FLUJOS[S.flujo.id].pasos[pasoId];
+  if (!paso) return;
+  if (paso.accion){ paso.accion(S); return; }
+  const chips = typeof paso.chips === "function" ? paso.chips() : (paso.chips||[]);
+  bot([paso.pregunta], null, null);
+  ponerChips(chips.map(c=>({label:c.label, accion:"paso:"+c.valor})));
+}
+function manejarTextoEnFlujo(texto){
+  const f = FLUJOS[S.flujo.id];
+  const t = norm(texto);
+
+  // salida voluntaria
+  if (/(^| )(cancelar|salir|dejalo|olvidalo|mejor no|despues sigo)( |$)/.test(t)){
+    bot(["Sin problema, lo dejamos hasta aquí. Retomamos cuando quieras 👍"]);
+    finFlujo(false);
+    sugerirMenu();
+    return;
+  }
+
+  // corrección en wizard ("la ciudad es Temuco")
+  if (S.flujo.paso === "corrigiendo"){
+    const d = S.flujo.datos;
+    let corrigio = false;
+    for (const c of CIUDADES){ if (t.includes(c)) { d.ciudad = c.replace(/\b\w/g,ch=>ch.toUpperCase()); corrigio = true; } }
+    const n = parseNumero(t); if (/personas|aforo|capacidad/.test(t) && n){ d.aforo = n; corrigio = true; }
+    if (/fiesta|festival|concierto|teatro|deport/.test(t)){ d.tipo = texto.trim().slice(0,30); corrigio = true; }
+    if (/este mes|meses|sin fecha|por definir/.test(t)){ d.fecha = texto.trim().slice(0,30); corrigio = true; }
+    if (corrigio){ bot(["Corregido ✅"]); pedirPaso("resumen"); }
+    else bot(["Dime por ejemplo: \"la ciudad es Temuco\" o \"son 1.500 personas\" y lo cambio."]);
+    return;
+  }
+
+  // ¿pregunta intercalada con intención clara? → responder corto y RETOMAR el paso
+  const dets = detectar(texto);
+  const paso = f.pasos[S.flujo.paso];
+  if (dets.length && dets[0].score >= 10 && dets[0].tipo === "kb" && !KB[dets[0].id].social){
+    const e = KB[dets[0].id];
+    meta("pregunta intercalada en flujo: " + dets[0].id + " · acción: responder y retomar paso \"" + S.flujo.paso + "\"");
+    registrarAccion("Respondió \"" + etiqueta(dets[0].id) + "\" sin perder el hilo del flujo");
+    bot(e.resp.slice(0,1), e.fuente);
+    setTimeout(()=>{
+      bot(["Sigamos donde íbamos 😉"]);
+      pedirPaso(S.flujo.paso);
+    }, 400);
+    return;
+  }
+
+  // respuesta normal del paso
+  if (paso && paso.procesar){
+    const sig = paso.procesar(texto);
+    if (sig === "repetir" || sig === undefined) return;
+    if (sig === null){ // el paso no supo interpretar → motor general
+      const d2 = detectar(texto);
+      if (d2.length && d2[0].score >= 6 && d2[0].tipo==="kb"){ responderKB(d2[0].id, d2); return; }
+      bot(["No te pesqué bien esa 🤔 " + (paso.pregunta || "¿Me lo repites?")]);
+      return;
+    }
+    if (sig === "fin") return;
+    pedirPaso(sig);
+  }
+}
+function finFlujo(exito){ S.flujo = null; }
+
+function registrarAccion(txt){ S.acciones.push(txt); }
+
+/* ========================== CAPA VISUAL ============================ */
+const chatEl = document.getElementById("chat");
+const bodyEl = document.getElementById("chatBody");
+const chipsEl = document.getElementById("chips");
+const inputEl = document.getElementById("chatInput");
+const sendEl  = document.getElementById("sendBtn");
+const launcherEl = document.getElementById("launcher");
+const unreadEl = document.getElementById("unread");
+const teaserEl = document.getElementById("teaser");
+
+function scrollAbajo(){ bodyEl.scrollTop = bodyEl.scrollHeight; }
+
+function burbuja(rol, texto){
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + rol;
+  const row = document.createElement("div"); row.className = "row";
+  const b = document.createElement("div"); b.className = "bubble";
+  b.textContent = texto;
+  row.appendChild(b); wrap.appendChild(row);
+  bodyEl.appendChild(wrap);
+  scrollAbajo();
+  return wrap;
+}
+function notaFuente(wrap, fuenteId){
+  if (!fuenteId || !FUENTES[fuenteId]) return;
+  const f = document.createElement("div");
+  f.className = "fuente";
+  f.textContent = "Fuente: " + FUENTES[fuenteId];
+  wrap.appendChild(f);
+}
+let metaPend = null;
+let metaPrefijo = null; // nota que se antepone a la próxima llamada a meta() (p.ej. "IA no disponible → motor local")
+function meta(txt){ metaPend = (metaPrefijo ? metaPrefijo + " · " : "") + txt; }
+function pintarMeta(wrap){
+  if (S.tecnico && metaPend){
+    const m = document.createElement("div");
+    m.className = "meta-tec";
+    m.textContent = "⚙ " + metaPend;
+    wrap.appendChild(m);
+    scrollAbajo();
+  }
+  metaPend = null;
+}
+
+let typingEl = null;
+function mostrarTyping(lbl){
+  quitarTyping();
+  typingEl = document.createElement("div");
+  typingEl.className = "msg bot";
+  typingEl.innerHTML = '<div class="row"><div class="bubble typing"><span></span><span></span><span></span>' + (lbl?'<span class="lbl">'+lbl+'</span>':'') + '</div></div>';
+  bodyEl.appendChild(typingEl);
+  scrollAbajo();
+}
+function quitarTyping(){ if (typingEl){ typingEl.remove(); typingEl = null; } }
+
+/* bot(): muestra burbujas con typing realista; chipsAccion = botones de acción */
+let colaBurbujas = Promise.resolve();
+function bot(textos, fuenteId, chipsAccion){
+  const lista = Array.isArray(textos) ? textos : [textos];
+  S.botOcupado = true;
+  colaBurbujas = colaBurbujas.then(()=> new Promise(res=>{
+    let i = 0;
+    const uno = ()=>{
+      if (i >= lista.length){
+        if (chipsAccion) ponerChips(chipsAccion);
+        S.botOcupado = false;
+        procesarCola();
+        res();
+        return;
+      }
+      const txt = lista[i];
+      mostrarTyping();
+      const delay = Math.min(350 + txt.length*7, 1500);
+      setTimeout(()=>{
+        quitarTyping();
+        const wrap = burbuja("bot", txt);
+        if (i === lista.length-1){ notaFuente(wrap, fuenteId); pintarMeta(wrap); }
+        S.historial.push({rol:"bot", texto:txt});
+        if (!S.abierto){ S.noLeidos++; refrescarNoLeidos(); }
+        i++; uno();
+      }, delay);
+    };
+    uno();
+  }));
+}
+function burbujAccion(txt, ms, luego){
+  S.botOcupado = true;
+  colaBurbujas = colaBurbujas.then(()=> new Promise(res=>{
+    const wrap = document.createElement("div");
+    wrap.className = "msg bot";
+    const row = document.createElement("div"); row.className="row";
+    const b = document.createElement("div"); b.className = "accion-burbuja";
+    b.innerHTML = '<span class="spin"></span><span>' + txt + '</span>';
+    row.appendChild(b); wrap.appendChild(row); bodyEl.appendChild(wrap);
+    scrollAbajo();
+    setTimeout(()=>{
+      b.innerHTML = '<span>✓</span><span>' + txt.replace("…"," — listo") + '</span>';
+      S.botOcupado = false;
+      if (luego) luego();
+      procesarCola();
+      res();
+    }, ms);
+  }));
+}
+
+/* ------------------------------ chips ------------------------------ */
+function etiqueta(id){
+  const L = {
+    comprar:"¿Cómo compro entradas?", pago:"Medios de pago", wallet:"¿Dónde queda mi entrada?",
+    reembolso:"Cambios y reembolsos", agotado:"Evento SOLD OUT", appMovil:"La app de Passline",
+    cuenta:"Mi cuenta y contraseña", privacidad:"Mis datos personales", responsabilidad:"¿Quién responde por el evento?",
+    contacto:"Contacto de soporte", confianza:"¿Qué tan grande es Passline?",
+    crearEvento:"Publicar mi evento", cargaEvento:"Paso a paso para publicar", categoriasEvento:"Categorías disponibles",
+    publicoPrivado:"Público vs. privado", entradasPrecio:"Tipos de entrada", aprobacion:"Aprobación del evento",
+    comisiones:"Comisiones", liquidaciones:"¿Cuándo me pagan?", cancelacionProductor:"Cancelar mi evento",
+    obligacionesProductor:"Mis obligaciones", ventasTiempoReal:"Ventas en tiempo real", difusion:"Promocionar mi evento",
+    servicios:"Servicios de marketing", serviciosOperativos:"Día del evento", recursos:"Manuales y recursos",
+    paisesLicencia:"Países donde opera", fueraDeBase:"Datos del evento",
+    flujoEntrada:"🎟️ No encuentro mi entrada", flujoCancelado:"❌ Evento cancelado", wizardStart:"🚀 Armar mi evento ahora",
+    wizard:"Creación de evento nuevo", calc:"Cálculo de comisión", buscarMusicaTxt:"Búsqueda de eventos",
+    calcStart:"🧮 Calcular comisión", buscarEventos:"🔎 Buscar eventos", asesor:"Hablar con una persona",
+  };
+  return L[id] || id;
+}
+function chipDe(id){
+  if (id === "wizardStart") return {label:etiqueta(id), accion:"flujo:wizard"};
+  if (id === "calcStart")   return {label:etiqueta(id), accion:"flujo:calc"};
+  if (id === "flujoEntrada")return {label:etiqueta(id), accion:"flujo:flujoEntrada"};
+  if (id === "flujoCancelado")return {label:etiqueta(id), accion:"flujo:flujoCancelado"};
+  if (id === "buscarEventos")return {label:etiqueta(id), accion:"buscar"};
+  if (id === "asesor")      return {label:etiqueta(id), accion:"handoff:pedido_explicito", secondary:true};
+  if (KB[id]) return {label:etiqueta(id), accion:"kb:"+id};
+  return null;
+}
+function ponerChips(lista){
+  chipsEl.innerHTML = "";
+  (lista||[]).filter(Boolean).slice(0,7).forEach(c=>{
+    const btn = document.createElement("button");
+    btn.className = "chip-btn" + (c.secondary ? " secondary" : "");
+    btn.textContent = c.label;
+    btn.addEventListener("click", ()=>accionChip(c));
+    chipsEl.appendChild(btn);
+  });
+}
+function sugerirMenu(){
+  const base = S.persona === "productora"
+    ? ["wizardStart","comisiones","liquidaciones","difusion","aprobacion","asesor"]
+    : (S.persona === "comprador"
+      ? ["flujoEntrada","reembolso","buscarEventos","pago","asesor"]
+      : ["flujoEntrada","buscarEventos","reembolso","wizardStart","comisiones"]);
+  ponerChips(base.map(chipDe));
+}
+let ultimoClick = 0;
+function accionChip(c){
+  const ahora = Date.now();
+  if (ahora - ultimoClick < 350) return; // anti doble-click
+  ultimoClick = ahora;
+  burbuja("user", c.label.replace(/^[^\w¿¡]+\s*/,""));
+  chipsEl.innerHTML = "";
+  const [tipo, arg] = (c.accion||"").split(":");
+  if (tipo === "kb") return responderKB(arg);
+  if (tipo === "flujo") return iniciarFlujo(arg, "");
+  if (tipo === "handoff") return hacerHandoff(arg);
+  if (tipo === "paso") return manejarTextoEnFlujo(arg);
+  if (tipo === "buscar") return buscarEventosDemo("musica");
+  if (tipo === "accion"){ // acciones registradas de flujos (cards)
+    const fn = (acciones[arg] || acciones2[arg] || acciones3[arg] || acciones4[arg]);
+    if (fn) return fn();
+  }
+  if (c.accion === "nada"){ bot(["Dale, te leo 👂"]); return; }
+}
+
+/* --------------------- componentes dentro del chat ------------------ */
+function cardBase(html, tag){
+  const wrap = document.createElement("div");
+  wrap.className = "msg bot";
+  const card = document.createElement("div");
+  card.className = "c-card";
+  card.innerHTML = (tag||"") + html;
+  wrap.appendChild(card);
+  bodyEl.appendChild(wrap);
+  scrollAbajo();
+  return card;
+}
+function cardTicket(ev, idCompra){
+  const c = cardBase(
+    '<div class="cc-head" style="background:'+ev.grad+'"><div class="t">'+ev.title+'</div></div>'+
+    '<div class="cc-body">'+
+      '<div class="kv"><div class="k">Orden</div><div class="v">#PL-58291 '+(idCompra? "· "+esc(idCompra):"")+'</div></div>'+
+      '<div class="kv"><div class="k">Entradas</div><div class="v">2 × General</div></div>'+
+      '<div class="kv"><div class="k">Fecha</div><div class="v">'+ev.d+' '+ev.m+' 2026 · 20:00 hrs</div></div>'+
+      '<div class="kv"><div class="k">Lugar</div><div class="v">'+ev.loc+'</div></div>'+
+      '<div class="kv"><div class="k">Estado</div><div class="v"><span class="badge ok">✓ Vigente</span></div></div>'+
+    '</div>',
+    '<span class="tag sim">Simulación · demo</span>'
+  );
+}
+function cardLead(d, clas){
+  const aforoTxt = typeof d.aforo === "number" ? "~" + d.aforo.toLocaleString("es-CL") + " personas" : (d.aforo || "—");
+  cardBase(
+    '<div class="cc-body" style="padding-top:12px">'+
+      '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">📋 Resumen de tu evento</div>'+
+      '<div class="kv"><div class="k">Tipo</div><div class="v">'+esc(d.tipo||"—")+'</div></div>'+
+      '<div class="kv"><div class="k">Ciudad</div><div class="v">'+esc(d.ciudad||"—")+'</div></div>'+
+      '<div class="kv"><div class="k">Fecha</div><div class="v">'+esc(d.fecha||"—")+'</div></div>'+
+      '<div class="kv"><div class="k">Aforo</div><div class="v">'+esc(aforoTxt)+'</div></div>'+
+      '<div class="kv"><div class="k">Entradas</div><div class="v">'+esc(d.entradas||"—")+'</div></div>'+
+      '<div class="kv"><div class="k">Lead</div><div class="v"><span class="badge hot">'+(clas==="caliente"?"🔥 Caliente":"Tibio")+'</span></div></div>'+
+    '</div>',
+    '<span class="tag sim">Simulación · demo</span>'
+  );
+}
+function cardCalculo(p,q,fee,feeTxt){
+  const total = p*q, feeTotal = fee*q, neto = total-feeTotal;
+  cardBase(
+    '<div class="cc-body" style="padding-top:12px">'+
+      '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🧮 Simulación de comisión</div>'+
+      '<div class="kv"><div class="k">Entrada</div><div class="v">'+fmtCLP(p)+' × '+q.toLocaleString("es-CL")+'</div></div>'+
+      '<div class="kv"><div class="k">Recaudación</div><div class="v">'+fmtCLP(total)+'</div></div>'+
+      '<div class="kv"><div class="k">Comisión</div><div class="v">'+feeTxt+' por entrada</div></div>'+
+      '<div class="kv"><div class="k">Total comisión</div><div class="v">'+fmtCLP(feeTotal)+'</div></div>'+
+      '<div class="kv" style="border-top:1px solid var(--line); padding-top:6px; margin-top:6px"><div class="k">Recibirías</div><div class="v" style="color:var(--ok)">'+fmtCLP(neto)+' aprox.</div></div>'+
+    '</div>',
+    '<span class="tag sim">Cálculo referencial</span>'
+  );
+}
+function cardHandoff(info){
+  const accionesHtml = (info.acciones && info.acciones.length)
+    ? info.acciones.map(a=>'<div class="tl-step done"><div class="ic">✓</div><div class="tx">'+esc(a)+'</div></div>').join("")
+    : '<div class="tl-step done"><div class="ic">✓</div><div class="tx">Conversación registrada completa</div></div>';
+  cardBase(
+    '<div class="cc-body" style="padding-top:12px">'+
+      '<div style="font-weight:800;font-size:13.5px;margin-bottom:2px">📨 Resumen enviado al agente humano</div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Esto es lo que recibiría el equipo de soporte — sin hacerte repetir nada</div>'+
+      '<div class="kv"><div class="k">Cliente</div><div class="v">'+esc(info.cliente)+'</div></div>'+
+      '<div class="kv"><div class="k">Perfil</div><div class="v">'+esc(info.perfil)+'</div></div>'+
+      '<div class="kv"><div class="k">Motivo</div><div class="v">'+esc(info.motivo)+'</div></div>'+
+      '<div class="kv"><div class="k">Tema</div><div class="v">'+esc(info.tema)+'</div></div>'+
+      (info.detalle ? '<div class="kv"><div class="k">Detalle</div><div class="v" style="font-weight:400">'+esc(info.detalle)+'</div></div>' : "")+
+      '<div style="font-size:11.5px;font-weight:700;color:var(--muted);margin:8px 0 2px">Lo que el asistente ya hizo:</div>'+
+      accionesHtml+
+      '<div style="margin-top:8px"><span class="badge ok">En cola · simulado</span></div>'+
+    '</div>',
+    '<span class="tag sim">Simulación · demo</span>'
+  );
+}
+function cardTimeline(){
+  cardBase(
+    '<div class="cc-body" style="padding-top:12px">'+
+      '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">Solicitud de devolución — seguimiento</div>'+
+      '<div class="timeline">'+
+        '<div class="tl-step done"><div class="ic">✓</div><div class="tx">Solicitud registrada<small>hoy</small></div></div>'+
+        '<div class="tl-step"><div class="ic">2</div><div class="tx">Validación de la productora<small>autoriza la devolución</small></div></div>'+
+        '<div class="tl-step"><div class="ic">3</div><div class="tx">Transferencia bancaria<small>hasta 20 días hábiles</small></div></div>'+
+      '</div>'+
+    '</div>',
+    '<span class="tag sim">Simulación · demo</span>'
+  );
+}
+function buscarEventosDemo(cat){
+  S.persona = S.persona || "comprador";
+  registrarAccion("Búsqueda simulada de eventos (" + cat + ")");
+  meta("acción simulada: búsqueda de eventos · en producción saldría del catálogo vivo");
+  burbujAccion("Buscando eventos… (simulación)", 1200, ()=>{
+    const evs = EVENTOS.filter(e=>e.cat===cat && !e.soldOut).slice(0,3);
+    const c = cardBase(
+      evs.map(e=>
+        '<div class="ev-mini">'+
+          '<div class="thumb" style="background:'+e.grad+'"></div>'+
+          '<div class="inf"><div class="n">'+e.title+'</div><div class="d">'+e.loc+' · '+e.d+' '+e.m+' · desde '+fmtCLP(e.precio)+'</div></div>'+
+          '<div class="go"><button class="c-btn ghost" data-ev="'+e.id+'">Ver</button></div>'+
+        '</div>'
+      ).join(""),
+      '<span class="tag sim">Eventos ficticios · demo</span>'
+    );
+    c.querySelectorAll("[data-ev]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        bot(["En la versión real, este botón te llevaría a la ficha del evento en Passline para comprar al tiro 🎟️"]);
+      });
+    });
+    bot(["Estos son algunos panoramas 🎶 (ficticios para la demo — en producción saldrían del catálogo vivo de Passline). ¿Alguno te tinca?"]);
+  });
+}
+
+/* -------- búsquedas de música / eventos por texto libre -------- */
+K("buscarMusicaTxt", { aud:"comprador", fuente:null,
+  kw:["busco algo de musica","panorama para el finde","que hay este fin de semana","eventos este finde","algo que hacer","recomiendame un evento","conciertos este","que eventos hay","busco un evento","panoramas"],
+  run(){ buscarEventosDemo("musica"); },
+  resp:[], chips:[] });
+
+/* ======================= ENTRADA DEL USUARIO ======================== */
+function enviarTextoUsuario(raw){
+  const texto = (raw||"").trim();
+  if (!texto) return;
+  if (texto.length > 600){
+    burbuja("user", texto.slice(0,600) + "…");
+    bot(["Uf, es harta información 😅 Me quedo con lo principal — y si prefieres, te derivo con una persona que pueda leerlo todo con calma."], null,
+      [{label:"Derivar con una persona", accion:"handoff:pedido_explicito"},{label:"Seguir contigo", accion:"nada"}]);
+    return;
+  }
+  burbuja("user", texto);
+  chipsEl.innerHTML = "";
+  if (S.botOcupado){ S.cola.push(texto); return; } // se consolida al terminar
+  procesarTexto(texto).catch(()=>{ S.botOcupado = false; });
+}
+function procesarCola(){
+  if (!S.cola.length || S.botOcupado) return;
+  const junto = S.cola.join(". ");
+  S.cola = [];
+  setTimeout(()=>{ if(!S.botOcupado) procesarTexto(junto).catch(()=>{ S.botOcupado = false; }); }, 250);
+}
+
+/* run() en KB (para entradas ejecutables) */
+const _responderKB = responderKB;
+responderKB = function(id, dets){
+  const e = KB[id];
+  if (e && typeof e.run === "function"){
+    S.temaActual = id;
+    if (e.aud) S.persona = (e.aud === "productora") ? "productora" : "comprador";
+    meta("intención: " + id + " · acción ejecutable");
+    e.run();
+    return;
+  }
+  _responderKB(id, dets);
+};
+
+/* ============================ ARRANQUE ============================= */
+function saludoInicial(){
+  bot([
+    "¡Hola! 👋 Soy el asistente de Passline.",
+    "Puedo ayudarte a encontrar tus entradas, resolver problemas con una compra, o guiarte para publicar y vender tu propio evento.",
+    "Cuéntame en tus palabras qué necesitas — o parte por aquí:"
+  ], null, [
+    chipDe("flujoEntrada"),
+    chipDe("buscarEventos"),
+    {label:"💸 Cambios y reembolsos", accion:"kb:reembolso"},
+    chipDe("wizardStart"),
+    {label:"💰 Comisiones para productoras", accion:"kb:comisiones"},
+  ]);
+}
+function resetConversacion(){
+  S.persona=null; S.flujo=null; S.historial=[]; S.acciones=[]; S.temaActual=null;
+  S.fallos=0; S.escalado=false; S.correo=null; S.cola=[]; S.botOcupado=false;
+  colaBurbujas = Promise.resolve();
+  quitarTyping();
+  bodyEl.innerHTML = ""; chipsEl.innerHTML = "";
+  saludoInicial();
+}
+function refrescarNoLeidos(){
+  if (S.noLeidos > 0 && !S.abierto){ unreadEl.textContent = S.noLeidos; unreadEl.classList.add("on"); }
+  else { unreadEl.classList.remove("on"); }
+}
+function abrirChat(){
+  S.abierto = true; S.noLeidos = 0; refrescarNoLeidos();
+  chatEl.classList.add("open");
+  launcherEl.setAttribute("aria-expanded","true");
+  teaserEl.classList.remove("on");
+  if (!S.iniciado){ S.iniciado = true; saludoInicial(); }
+  setTimeout(()=>inputEl.focus(), 250);
+}
+function cerrarChat(){
+  S.abierto = false;
+  chatEl.classList.remove("open");
+  launcherEl.setAttribute("aria-expanded","false");
+  launcherEl.focus();
+}
+
+launcherEl.addEventListener("click", ()=>{ S.abierto ? cerrarChat() : abrirChat(); });
+document.getElementById("btnClose").addEventListener("click", cerrarChat);
+document.getElementById("btnReset").addEventListener("click", resetConversacion);
+document.getElementById("btnTec").addEventListener("click", (e)=>{
+  S.tecnico = !S.tecnico;
+  e.currentTarget.classList.toggle("on", S.tecnico);
+  bot([S.tecnico
+    ? "Modo técnico activado 🔍 — desde ahora muestro si cada respuesta vino de la IA (Gemini) o del motor de reglas local (respaldo automático), con qué confianza/latencia y de qué fuente sale."
+    : "Modo técnico desactivado."]);
+});
+document.addEventListener("keydown", (e)=>{ if (e.key === "Escape" && S.abierto) cerrarChat(); });
+
+let ultimoEnvio = 0;
+function despachar(){
+  const ahora = Date.now();
+  if (ahora - ultimoEnvio < 250) return; // anti doble-envío
+  ultimoEnvio = ahora;
+  enviarTextoUsuario(inputEl.value);
+  inputEl.value = "";
+}
+sendEl.addEventListener("click", despachar);
+inputEl.addEventListener("keydown", (e)=>{ if (e.key === "Enter") despachar(); });
+
+/* teaser de bienvenida */
+setTimeout(()=>{ if (!S.abierto) teaserEl.classList.add("on"); }, 1800);
+setTimeout(()=>{ teaserEl.classList.remove("on"); }, 9000);
+
+/* ---------- grilla del sitio de fondo ---------- */
+const grid = document.getElementById("grid");
+EVENTOS.forEach(e=>{
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML =
+    '<div class="art" style="background:'+e.grad+'">' + (e.soldOut ? '<div class="ribbon">SOLD OUT</div>' : '') + '</div>'+
+    '<div class="body"><div class="loc">📍 '+e.loc+'</div><div class="title">'+e.title+'</div>'+
+    '<div class="date">'+e.d+'<small>'+e.m+'<br>2026</small><span class="sep"></span>20<small>00 hrs</small></div></div>';
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
