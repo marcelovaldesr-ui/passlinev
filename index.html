@@ -461,6 +461,13 @@ function parseNumero(texto){
 }
 function esCorreo(t){ return /\S+@\S+\.\S+/.test(t); }
 function esOrden(t){ return /#?\d{5,}/.test(t.replace(/\./g,"")); }
+/* Detección de palabras/frases COMPLETAS (con límite de palabra), no substrings.
+   Necesario para triggers cortos como "si"/"no"/"ok": sin esto, ".test(t)" con una
+   regex tipo /(si|...)/ hace falso positivo con cualquier palabra que solo CONTENGA
+   esas letras — "comisión" contiene "si", "términos" contiene "no" — causando que
+   el bot "entienda" un sí/no donde no lo hay (alucinación real, detectada en vivo). */
+function contienePalabra(t, frase){ return (" "+t+" ").includes(" "+frase+" "); }
+function contieneAlguna(t, frases){ return frases.some(f => contienePalabra(t, f)); }
 
 /* ==================== BASE DE CONOCIMIENTO (KB) =====================
    Cada entrada: kw (frases pesan más que palabras sueltas), resp
@@ -732,9 +739,9 @@ const FLUJOS = {
       resolver:{
         procesar(texto){
           const t = norm(texto);
-          if (/(si|reenvia|reenviar|mandala|enviala|correo)/.test(t)) return acciones.reenviar(), "fin";
-          if (/(no era|otra compra|no es esa)/.test(t)) return acciones.noEra(), "fin";
-          if (/(listo|gracias|si era|perfecto|ya la vi)/.test(t)) return acciones.resuelto(), "fin";
+          if (contieneAlguna(t, ["si","reenvia","reenviar","mandala","enviala","correo"])) return acciones.reenviar(), "fin";
+          if (contieneAlguna(t, ["no era","otra compra","no es esa"])) return acciones.noEra(), "fin";
+          if (contieneAlguna(t, ["listo","gracias","si era","perfecto","ya la vi"])) return acciones.resuelto(), "fin";
           return null; // que el motor general intente responder
         }
       }
@@ -796,8 +803,8 @@ const FLUJOS = {
       resolver:{
         procesar(texto){
           const t = norm(texto);
-          if (/(si|iniciar|dale|ok|bueno|hagamoslo)/.test(t)) return acciones2.solicitar(), "fin";
-          if (/(no|despues|luego|no por ahora)/.test(t)) return acciones2.cerrar(), "fin";
+          if (contieneAlguna(t, ["si","iniciar","dale","ok","bueno","hagamoslo"])) return acciones2.solicitar(), "fin";
+          if (contieneAlguna(t, ["no","despues","luego","no por ahora"])) return acciones2.cerrar(), "fin";
           return null;
         }
       },
@@ -906,8 +913,8 @@ const FLUJOS = {
       resolver:{
         procesar(texto){
           const t = norm(texto);
-          if (/(si|enviar|dale|mandalo|ok|listo)/.test(t)) return acciones3.enviarLead(), "fin";
-          if (/(corregir|cambiar|editar|no)/.test(t)) return acciones3.corregir(), "fin";
+          if (contieneAlguna(t, ["si","enviar","dale","mandalo","ok","listo"])) return acciones3.enviarLead(), "fin";
+          if (contieneAlguna(t, ["corregir","cambiar","editar","no"])) return acciones3.corregir(), "fin";
           return null;
         }
       }
@@ -955,8 +962,8 @@ const FLUJOS = {
       resolver:{
         procesar(texto){
           const t = norm(texto);
-          if (/(si|armar|dale|ok)/.test(t)) return acciones4.irWizard(), "fin";
-          if (/(no|despues|luego)/.test(t)) return acciones4.cerrarCalc(), "fin";
+          if (contieneAlguna(t, ["si","armar","dale","ok"])) return acciones4.irWizard(), "fin";
+          if (contieneAlguna(t, ["no","despues","luego"])) return acciones4.cerrarCalc(), "fin";
           return null;
         }
       }
@@ -1081,6 +1088,12 @@ const KW_ENOJO = ["estafa","estafadores","pesimo","pesima","indignante","una ver
 const KW_HUMANO = ["hablar con una persona","hablar con alguien","con un humano","atencion humana","un ejecutivo","una persona real","operador","quiero un agente","con soporte","hablar con un asesor","asesor humano"];
 const KW_AMBIGUO = ["no me funciona","no funciona","tengo un problema","necesito ayuda","ayuda","no puedo","me da error","hay un error","tengo una duda","consulta"];
 const KW_INJECTION = ["ignora tus instrucciones","olvida tus instrucciones","ignora las reglas","eres un modelo","actua como","system prompt","desde ahora eres"];
+/* Un bot "maduro" no insiste con lo mismo cuando el propio usuario le dice que se
+   equivocó — lo reconoce y deriva, en vez de repetir la respuesta o adivinar de nuevo
+   (benchmark: así manejan la baja confianza/corrección los agentes de IA de atención
+   al cliente mejor evaluados de la industria). Frases largas y específicas a propósito
+   — nada de palabras sueltas cortas, para no repetir el bug de falsos positivos. */
+const KW_CORRECCION = ["eso no es correcto","eso esta mal","te equivocaste","esa info esta mal","eso no es asi","estas equivocado","estas equivocada","eso no es cierto","eso no corresponde","no es lo que dice","te equivocas","esa no es la respuesta","me diste mal esa info"];
 
 function esEnojo(texto){
   const t = norm(texto);
@@ -1088,6 +1101,10 @@ function esEnojo(texto){
   const letras = texto.replace(/[^a-zA-ZÁÉÍÓÚáéíóúñÑ]/g,"");
   const mayus = texto.replace(/[^A-ZÁÉÍÓÚÑ]/g,"");
   return letras.length > 14 && mayus.length/letras.length > 0.7;
+}
+function esCorreccion(texto){
+  const t = norm(texto);
+  return KW_CORRECCION.some(k=>t.includes(norm(k)));
 }
 
 /* ========================= HANDOFF (humano) ========================= */
@@ -1215,6 +1232,18 @@ async function procesarTexto(texto){
     meta("trigger: pedido_explicito · acción: derivación inmediata");
     bot(["Por supuesto — te derivo de inmediato."]);
     setTimeout(()=>hacerHandoff("pedido_explicito"), 700);
+    return;
+  }
+
+  // 2b) el usuario corrige al bot → nunca insistir con lo mismo ni adivinar de nuevo:
+  // se reconoce y se ofrece derivar (así manejan la baja confianza los agentes de
+  // atención al cliente con IA mejor evaluados — no hay una "segunda respuesta mágica"
+  // que vaya a estar más acertada que la primera si ya se marcó como errónea).
+  if (esCorreccion(texto)){
+    meta("trigger: corrección del usuario · acción: reconocer + ofrecer derivación, sin insistir");
+    registrarAccion("El usuario marcó una respuesta como incorrecta — se ofreció derivación en vez de insistir");
+    bot(["Tienes razón en no quedarte con algo que no te calzó — prefiero no insistir con lo mismo y arriesgarme a equivocarme de nuevo. Te derivo con una persona del equipo para que lo revise con calma 🙏"], null,
+      [{label:"Sí, derivar con una persona", accion:"handoff:incertidumbre"},{label:"Prefiero reformular mi pregunta", accion:"nada"}]);
     return;
   }
 
