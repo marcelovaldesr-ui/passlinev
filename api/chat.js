@@ -36,7 +36,7 @@ Significa que la productora vendió todas las entradas de esa función. Passline
 App en Google Play y App Store, con wallet integrada. Funciona en español, inglés, portugués, italiano y catalán.
 
 ### [faq] Cuenta
-En "Tu Cuenta" del perfil se editan datos, se cambia la contraseña y se ven los tickets comprados.
+Con sesión iniciada: en "Tu Cuenta" del perfil se editan datos, se cambia la contraseña y se ven los tickets comprados. Si el usuario olvidó la contraseña y no puede entrar, se restablece desde la misma pantalla de inicio de sesión, con el correo registrado (no hace falta la contraseña anterior). Aplica igual para compradores y productoras.
 
 ### [pol] Privacidad
 Passline usa los datos del usuario (nombre, contacto, etc.) para procesar compras y mejorar el servicio. No se traspasan a terceros salvo empresas relacionadas con Passline.
@@ -47,17 +47,26 @@ Teléfono +562 2234 1369, correo contacto@passline.com. El canal puede variar po
 ### [prod] Escala de Passline
 8,3 millones de tickets vendidos, más de 117.000 eventos activos, 127 millones de visitas, en 19 países de América y Europa.
 
-### [prod] Publicar un evento
-Gratis. Primero un formulario de contacto (~5 min): país, nombre, apellido, empresa/productora, email, teléfono; luego nombre del evento, categoría, fecha tentativa, aforo esperado, red social y mensaje opcional. Un asesor de Passline contacta después con recomendaciones.
+### [prod] Publicar un evento (interés comercial, vía este asistente)
+Gratis. Alternativa dentro de este chat: un formulario de contacto corto (~5 min) con país, nombre, apellido, empresa/productora, email, teléfono, nombre del evento, categoría, fecha tentativa, aforo esperado, red social y mensaje opcional — un asesor de Passline contacta después con recomendaciones. Esto es distinto del flujo real de creación en la plataforma (ver bloque [flujo] "Cargar el evento").
 
-### [blog] Cargar el evento (paso a paso)
-1) Elegir tipo de evento y país. 2) Crear cuenta gratis. 3) Completar nombre, categorías, descripción, público o privado, venue (autocompletado), imagen del evento (obligatoria), y opcionalmente video/Spotify. 4) Definir entradas y precios (opcional al inicio). 5) Publicar — Passline valida el evento antes de habilitar la venta, confirmación por email. Tip SEO: buena capitalización, sin caracteres raros en el nombre.
+### [flujo] Cómo llegar al formulario de creación (validado en pantalla, versión móvil)
+Con la cuenta creada y sesión iniciada: menú ☰ (arriba a la derecha) → botón amarillo "CREA TU EVENTO". Importante: "¿Eres Productor?" es solo una sección informativa (por qué vender con Passline, servicios de marketing, kioskos de autoatención, contáctanos) — NO es el botón de creación. Es una confusión frecuente que hay que aclarar si preguntan "dónde creo mi evento".
+
+### [flujo] Tipos de evento
+Al crear el evento se elige uno de 4 tipos: Evento Presencial (asistencia física a un recinto), Evento streaming (transmisión online, sin asistencia física), Evento mixto (combina presencial y streaming), o Carta de consumo (venta de consumos/productos asociados, formato distinto a una entrada tradicional). El tipo elegido define los campos que pide el formulario después (p.ej. dirección del recinto vs. enlace de transmisión).
+
+### [flujo] Cargar el evento — paso a paso real de la plataforma (validado en pantalla, versión móvil)
+1) Cuenta creada y sesión iniciada (o crearla gratis con correo; si se olvida la contraseña, se restablece desde la pantalla de inicio de sesión). 2) Menú ☰ → CREA TU EVENTO. 3) Elegir tipo de evento (Presencial/Streaming/Mixto/Carta de consumo). 4) Completar "Detalles del evento": título (máx. 150 caracteres), hasta 3 categorías, tipo del evento (público o privado), descripción (opcional), imagen del evento (800×800 px, máx. 4 MB, JPG o PNG — NO es obligatoria para crear el evento, pero si no se sube, el evento no aparece en la página principal hasta cargarla, puede subirse después desde la administración), y restricción de edad si corresponde (checkbox "Habilita restricción de edad" que activa un desplegable obligatorio de edad mínima). 5) Aceptar términos y condiciones y avanzar — si falta algo, la plataforma marca en rojo: título vacío, categorías sin elegir, tipo de evento sin elegir, restricción de edad sin seleccionar (si se activó esa opción), o términos sin marcar. 6) Definir fecha/hora/lugar (o el enlace de transmisión) y crear las entradas: nombre, valor, cantidad disponible, fechas de venta (esto puede completarse después). 7) Publicar — el equipo de Passline valida el evento antes de habilitar la venta, confirmación por email. Tip SEO del blog: buena capitalización y sin caracteres raros en el nombre ayuda a que se encuentre en buscadores.
+
+### [flujo] Administrar el evento ya creado
+Círculo con las iniciales del usuario (arriba a la derecha) → "Mis Eventos": ahí se ve y administra el evento (entradas, valores, disponibilidad y demás configuración). En el mismo menú, "Informes Externos" es la sección de reportes.
 
 ### [web] Categorías disponibles
-Música, Fútbol, Festivales, Deportes, Fiestas, Comedia, Exposiciones y Conferencias, Experiencias Gastronómicas, Teatro y Musicales, Fiestas Patrias, Familia, Cine, Vacaciones de Invierno, Outdoor, Summer, Halloween, Año Nuevo, Bienestar.
+Música, Fútbol, Festivales, Deportes, Fiestas, Comedia, Exposiciones y Conferencias, Experiencias Gastronómicas, Teatro y Musicales, Fiestas Patrias, Familia, Cine, Vacaciones de Invierno, Outdoor, Summer, Halloween, Año Nuevo, Bienestar. Se pueden asociar hasta 3 categorías por evento.
 
 ### [blog] Público vs. privado
-Público: aparece en el home y las búsquedas. Privado: solo visible con el link directo — ideal para eventos corporativos o cerrados.
+Público: aparece en el home y las búsquedas. Privado: solo visible con el link directo — ideal para eventos corporativos o cerrados. Los eventos privados nunca se publican en el sitio.
 
 ### [blog] Entradas y precios
 Se definen tipos (General, Early Bird, VIP...), precio en la moneda del país, y tope de cupos por tipo (se marca "Agotado" solo al llegar al tope). Opcional al crear el evento, se puede completar después.
@@ -69,7 +78,7 @@ Todo evento pasa por validación del equipo de Passline antes de habilitarse par
 15% sobre el valor de venta, con cargo mínimo de $500 por entrada (IVA incluido). Pagos en efectivo o internacionales suman $1.000 extra. El productor paga los demás impuestos que correspondan.
 
 ### [tycProd] Liquidaciones (cuándo le pagan a la productora)
-Passline transfiere lo recaudado dentro de 15 días hábiles después del evento, descontando la comisión, a la cuenta bancaria registrada (no se puede cambiar sin autorización de Passline).
+Passline transfiere lo recaudado dentro de 15 días hábiles después del evento, descontando la comisión, a la cuenta bancaria registrada (no se puede cambiar sin autorización de Passline). Referencia habitual del equipo (no es garantía contractual, no reemplaza el plazo de 15 días hábiles): los depósitos suelen procesarse los días martes. Para que el depósito no falle o se atrase, los datos personales y de facturación en el perfil deben coincidir entre sí (titular de la cuenta bancaria, RUT, facturación).
 
 ### [tycProd] Si la productora cancela/reprograma
 La productora es quien debe reembolsar a los compradores (Passline actúa como intermediaria, no paga los reembolsos de su bolsillo); debe avisar a Passline de inmediato y comunicarlo públicamente. Aparte de eso, Passline puede retener hasta 6 meses los fondos que le correspondían a la productora por esa venta (su liquidación, no la devolución del comprador) mientras se procesan los reembolsos, como resguardo. Los costos de la cancelación son de la productora. Importante para no confundir: el plazo de "hasta 20 días hábiles" (ver reembolsos de compradores) es lo que debería demorar la devolución que recibe el comprador; los "hasta 6 meses" es un plazo distinto, sobre la plata retenida a la productora — si te preguntan cuánto se demora el reembolso al comprador específicamente, usa los 20 días hábiles, no los 6 meses.
@@ -99,7 +108,8 @@ Passline opera en 19 países de América y Europa. Donde no hay presencia direct
 const CHIP_IDS_VALIDOS = [
   "comprar","pago","wallet","reembolso","agotado","appMovil","cuenta","privacidad",
   "responsabilidad","contacto","confianza","crearEvento","cargaEvento","categoriasEvento",
-  "publicoPrivado","entradasPrecio","aprobacion","comisiones","liquidaciones",
+  "publicoPrivado","entradasPrecio","aprobacion","tipoEvento","imagenEvento","restriccionEdad",
+  "validacionesFormulario","misEventos","comisiones","liquidaciones",
   "cancelacionProductor","obligacionesProductor","ventasTiempoReal","difusion","servicios",
   "serviciosOperativos","recursos","paisesLicencia","flujoEntrada","flujoCancelado",
   "wizardStart","calcStart","asesor",
@@ -136,7 +146,7 @@ Cuando accion="responder", sugiere de 2 a 4 IDs de esta lista fija que tengan se
 ${CHIP_IDS_VALIDOS.join(", ")}
 
 ## FORMATO DE SALIDA — responde SOLO con este JSON, sin texto extra, sin markdown:
-{"accion": "responder" | "iniciar_flujo" | "escalar", "flujo": "flujoEntrada" | "flujoCancelado" | "wizard" | "calc" | null, "respuesta": "texto para el cliente, o null si accion=iniciar_flujo", "fuente": "faq" | "tyc" | "tycProd" | "pol" | "prod" | "blog" | "web" | null, "chips_sugeridos": ["id1","id2"], "trigger": "pedido_explicito" | "incertidumbre" | null}`;
+{"accion": "responder" | "iniciar_flujo" | "escalar", "flujo": "flujoEntrada" | "flujoCancelado" | "wizard" | "calc" | null, "respuesta": "texto para el cliente, o null si accion=iniciar_flujo", "fuente": "faq" | "tyc" | "tycProd" | "pol" | "prod" | "blog" | "web" | "flujo" | null, "chips_sugeridos": ["id1","id2"], "trigger": "pedido_explicito" | "incertidumbre" | null}`;
 }
 
 function construirContents(historial, mensaje) {
@@ -259,7 +269,7 @@ module.exports = async (req, res) => {
       parsed.respuesta = parsed.respuesta.slice(0, 800); // tope defensivo, aunque maxOutputTokens ya lo acota
     }
 
-    const FUENTES_VALIDAS = ["faq", "tyc", "tycProd", "pol", "prod", "blog", "web"];
+    const FUENTES_VALIDAS = ["faq", "tyc", "tycProd", "pol", "prod", "blog", "web", "flujo"];
     if (!FUENTES_VALIDAS.includes(parsed.fuente)) parsed.fuente = null;
 
     const TRIGGERS_VALIDOS = ["pedido_explicito", "incertidumbre"];
