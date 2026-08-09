@@ -710,8 +710,10 @@ const FLUJOS = {
         procesar(texto){
           const t = norm(texto);
           const ev = EVENTOS.find(e => norm(e.title).includes(t) || t.includes(norm(e.title)) || tokens(e.title).some(w=>w.length>4 && t.includes(norm(w))));
-          S.flujo.datos.evento = ev ? ev.title : texto;
-          S.flujo.datos.eventoObj = ev || EVENTOS[0];
+          S.flujo.datos.evento = ev ? ev.title : texto.trim().slice(0,60);
+          // honesto: si el evento no está en el catálogo ficticio de la demo, NO se inventa
+          // haciéndolo calzar con otro evento real (antes caía en EVENTOS[0] por defecto).
+          S.flujo.datos.eventoObj = ev || null;
           return "buscar";
         }
       },
@@ -720,6 +722,12 @@ const FLUJOS = {
           registrarAccion("Búsqueda simulada de la compra ("+ (S.flujo.datos.id||"sin identificador") +")");
           burbujAccion("Buscando tu compra en Passline… (simulación)", 1500, ()=>{
             const ev = S.flujo.datos.eventoObj;
+            if (!ev){
+              S.flujo.paso = "evento"; // vuelve al paso de evento: un chip o texto nuevo pasa de nuevo por su procesar()
+              bot(["Busqué \"" + S.flujo.datos.evento + "\", pero esta demo solo tiene un puñado de eventos ficticios de ejemplo y ese no está entre ellos — así que no puedo simular esa tarjeta con datos reales.","En la integración real esto buscaría directo en la base de Passline, sin depender de una lista fija. ¿Probamos con uno de estos eventos de ejemplo, o prefieres que te derive con una persona?"], null,
+                EVENTOS.slice(0,2).map(e=>({label:e.title, accion:"paso:"+e.title})).concat([{label:"Derivar con una persona", accion:"accion:noEra"}]));
+              return;
+            }
             cardTicket(ev, S.flujo.datos.id);
             bot(["¡La encontré! 🎉 (datos simulados) Ahí está tu compra con sus 2 entradas vigentes.","¿Te la reenvío al correo, o no era esta la compra?"],
               null,
@@ -1219,7 +1227,7 @@ async function procesarTexto(texto){
 
   // 3) si hay flujo activo → el texto es respuesta del paso (o pregunta intercalada)
   if (S.flujo){
-    manejarTextoEnFlujo(texto);
+    await manejarTextoEnFlujo(texto);
     return;
   }
 
@@ -1326,7 +1334,7 @@ function pedirPaso(pasoId){
   bot([paso.pregunta], null, null);
   ponerChips(chips.map(c=>({label:c.label, accion:"paso:"+c.valor})));
 }
-function manejarTextoEnFlujo(texto){
+async function manejarTextoEnFlujo(texto){
   const f = FLUJOS[S.flujo.id];
   const t = norm(texto);
 
@@ -1361,7 +1369,7 @@ function manejarTextoEnFlujo(texto){
     bot(e.resp.slice(0,1), e.fuente);
     setTimeout(()=>{
       bot(["Sigamos donde íbamos 😉"]);
-      pedirPaso(S.flujo.paso);
+      retomarPaso(S.flujo.paso);
     }, 400);
     return;
   }
@@ -1370,9 +1378,27 @@ function manejarTextoEnFlujo(texto){
   if (paso && paso.procesar){
     const sig = paso.procesar(texto);
     if (sig === "repetir" || sig === undefined) return;
-    if (sig === null){ // el paso no supo interpretar → motor general
+    if (sig === null){ // el paso no supo interpretar como respuesta directa → intenta motor local, y si no hay nada claro, la IA
       const d2 = detectar(texto);
-      if (d2.length && d2[0].score >= 6 && d2[0].tipo==="kb"){ responderKB(d2[0].id, d2); return; }
+      if (d2.length && d2[0].score >= 6 && d2[0].tipo==="kb"){
+        registrarAccion("Respondió \"" + etiqueta(d2[0].id) + "\" sin perder el hilo del flujo");
+        responderKB(d2[0].id, d2, texto);
+        setTimeout(()=>{ bot(["Sigamos donde íbamos 😉"]); retomarPaso(S.flujo.paso); }, 400);
+        return;
+      }
+      // el motor de reglas local no reconoció nada — antes esto terminaba en "no te pesqué bien esa"
+      // aunque fuera una pregunta legítima (p.ej. "y cómo lo hago dentro del portal?" a mitad del wizard);
+      // se le da una oportunidad a la IA (misma que responde fuera de los flujos) antes de rendirse.
+      mostrarTyping();
+      const respuestaIA = await intentarIA(texto);
+      quitarTyping();
+      if (respuestaIA && respuestaIA.accion === "responder" && respuestaIA.respuesta){
+        meta("IA (Gemini) · pregunta intercalada en flujo \"" + S.flujo.id + "\"");
+        registrarAccion("Respondió una pregunta intercalada (IA) sin perder el hilo del flujo");
+        bot([respuestaIA.respuesta], respuestaIA.fuente || null);
+        setTimeout(()=>{ bot(["Sigamos donde íbamos 😉"]); retomarPaso(S.flujo.paso); }, 400);
+        return;
+      }
       bot(["No te pesqué bien esa 🤔 " + (paso.pregunta || "¿Me lo repites?")]);
       return;
     }
@@ -1522,13 +1548,27 @@ function chipDe(id){
 }
 function ponerChips(lista){
   chipsEl.innerHTML = "";
-  (lista||[]).filter(Boolean).slice(0,7).forEach(c=>{
+  const filtrada = (lista||[]).filter(Boolean).slice(0,7);
+  // se guardan para poder re-mostrarlos tal cual si hay que "retomar" el paso tras una
+  // pregunta intercalada tocando un paso que no tiene pregunta propia (ver retomarPaso()).
+  if (S.flujo) S.flujo.ultimosChips = filtrada;
+  filtrada.forEach(c=>{
     const btn = document.createElement("button");
     btn.className = "chip-btn" + (c.secondary ? " secondary" : "");
     btn.textContent = c.label;
     btn.addEventListener("click", ()=>accionChip(c));
     chipsEl.appendChild(btn);
   });
+}
+/* Retoma un paso después de responder una pregunta intercalada. A diferencia de pedirPaso(),
+   es seguro llamarla sobre pasos "resolver" (solo procesar(), sin pregunta ni chips propios):
+   en vez de intentar mostrar una pregunta inexistente (lo que rompía la conversación), re-muestra
+   los últimos chips que ya estaban activos para esa decisión. */
+function retomarPaso(pasoId){
+  if (!S.flujo) return;
+  const paso = FLUJOS[S.flujo.id].pasos[pasoId];
+  if (paso && (paso.pregunta || paso.chips || paso.accion)){ pedirPaso(pasoId); return; }
+  if (S.flujo.ultimosChips && S.flujo.ultimosChips.length) ponerChips(S.flujo.ultimosChips);
 }
 function sugerirMenu(){
   const base = S.persona === "productora"
@@ -1693,11 +1733,14 @@ function preguntarCategoriaBusqueda(){
 
 /* -------- búsquedas de música / eventos por texto libre -------- */
 K("buscarMusicaTxt", { aud:"comprador", fuente:null,
-  kw:["busco algo de musica","panorama para el finde","que hay este fin de semana","eventos este finde","algo que hacer","recomiendame un evento","conciertos este","que eventos hay","busco un evento","panoramas"],
+  kw:["busco algo de musica","panorama para el finde","que hay este fin de semana","eventos este finde","algo que hacer","recomiendame un evento","conciertos este","que eventos hay","busco un evento","panoramas","hay algun evento","hay eventos","algun panorama","sabes de algun evento","tienes algun evento","que panoramas hay"],
   run(textoOriginal){
     const t = norm(textoOriginal||"");
     // solo se asume "música" si el propio texto lo dice — si no, se pregunta la categoría
-    if (/musica|concierto|tocata|dj|electronic|banda|recital/.test(t)) buscarEventosDemo("musica");
+    if (/musica|concierto|tocata|dj|electronic|electronica|techno|tecno|house|banda|recital|indie|rock|pop|reggaeton/.test(t)) buscarEventosDemo("musica");
+    else if (/deporte|futbol|partido|torneo|copa/.test(t)) buscarEventosDemo("deporte");
+    else if (/comedia|stand ?up|humor/.test(t)) buscarEventosDemo("comedia");
+    else if (/gastro|comida|culinari/.test(t)) buscarEventosDemo("gastro");
     else preguntarCategoriaBusqueda();
   },
   resp:[], chips:[] });
