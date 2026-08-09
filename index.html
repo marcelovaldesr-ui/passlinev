@@ -994,9 +994,9 @@ const acciones2 = {
 };
 const acciones3 = {
   enviarLead(){
-    registrarAccion("Lead enviado al equipo comercial (simulado)");
+    registrarAccion("Lead enviado al equipo comercial (simulado) — quedaría creado como Deal en HubSpot");
     burbujAccion("Enviando tu resumen al equipo… (simulación)", 1200, ()=>{
-      bot(["¡Enviado! ✅ (simulado) Un asesor de Passline te contactaría con recomendaciones para tu " + (S.flujo && S.flujo.datos.tipo ? S.flujo.datos.tipo.toLowerCase() : "evento") + ".","Mientras tanto, ¿te explico las comisiones o cómo se configuran las entradas?"], null,
+      bot(["¡Enviado! ✅ (simulado) En una integración real, esto quedaría directo como un Deal calificado en el HubSpot de Passline — con el aforo, la fecha y el tipo de evento ya ordenados — para que el asesor comercial lo tome sin partir de cero.","Mientras tanto, ¿te explico las comisiones o cómo se configuran las entradas?"], null,
         [{label:"💰 Comisiones", accion:"kb:comisiones"},{label:"🎫 Tipos de entrada", accion:"kb:entradasPrecio"}]);
       finFlujo(true);
     });
@@ -1628,6 +1628,7 @@ function cardLead(d, clas){
       '<div class="kv"><div class="k">Aforo</div><div class="v">'+esc(aforoTxt)+'</div></div>'+
       '<div class="kv"><div class="k">Entradas</div><div class="v">'+esc(d.entradas||"—")+'</div></div>'+
       '<div class="kv"><div class="k">Lead</div><div class="v"><span class="badge hot">'+(clas==="caliente"?"🔥 Caliente":"Tibio")+'</span></div></div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">→ En una integración real, esto se crea como Deal en HubSpot, ya calificado y con todo este contexto</div>'+
     '</div>',
     '<span class="tag sim">Simulación · demo</span>'
   );

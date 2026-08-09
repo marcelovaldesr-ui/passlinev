@@ -48,7 +48,7 @@ Teléfono +562 2234 1369, correo contacto@passline.com. El canal puede variar po
 8,3 millones de tickets vendidos, más de 117.000 eventos activos, 127 millones de visitas, en 19 países de América y Europa.
 
 ### [prod] Publicar un evento (interés comercial, vía este asistente)
-Gratis. Alternativa dentro de este chat: un formulario de contacto corto (~5 min) con país, nombre, apellido, empresa/productora, email, teléfono, nombre del evento, categoría, fecha tentativa, aforo esperado, red social y mensaje opcional — un asesor de Passline contacta después con recomendaciones. Esto es distinto del flujo real de creación en la plataforma (ver bloque [flujo] "Cargar el evento").
+Gratis. Alternativa dentro de este chat: un formulario de contacto corto (~5 min) con país, nombre, apellido, empresa/productora, email, teléfono, nombre del evento, categoría, fecha tentativa, aforo esperado, red social y mensaje opcional — un asesor de Passline contacta después con recomendaciones. En una integración real, esto quedaría directo como un Deal calificado en el HubSpot de Passline (su CRM), con todos esos datos ya ordenados para el asesor comercial. Esto es distinto del flujo real de creación en la plataforma (ver bloque [flujo] "Cargar el evento").
 
 ### [flujo] Cómo llegar al formulario de creación (validado en pantalla, versión móvil)
 Con la cuenta creada y sesión iniciada: menú ☰ (arriba a la derecha) → botón amarillo "CREA TU EVENTO". Importante: "¿Eres Productor?" es solo una sección informativa (por qué vender con Passline, servicios de marketing, kioskos de autoatención, contáctanos) — NO es el botón de creación. Es una confusión frecuente que hay que aclarar si preguntan "dónde creo mi evento".
