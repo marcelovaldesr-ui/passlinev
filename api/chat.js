@@ -212,7 +212,9 @@ module.exports = async (req, res) => {
     t.cancel();
 
     if (!r.ok) {
-      res.status(502).json({ error: "gemini_error", status: r.status });
+      const errBody = await r.text().catch(() => "");
+      console.error("Gemini API error", r.status, errBody.slice(0, 800)); // visible en Vercel -> Deployments -> Logs
+      res.status(502).json({ error: "gemini_error", status: r.status, detalle: errBody.slice(0, 300) });
       return;
     }
     const data = await r.json();
